@@ -8,14 +8,12 @@ The basic gist of this:
 1. Store dotfiles in iCloud Drive
 2. Store secure dotfiles (e.g. environment variables) in an encrypted disk image
    in iCloud Drive
-3. Symlink iCloud Drive to my home directory as `~/icloud-drive`
-4. Symlink all my dotfiles from iCloud Drive to my home directory
-5. Have a script that installs (or updates) all of the programs I
-   typically need, such that it can be re-run gracefully
+3. Have a script that symlinks iCloud drive & dotfiles to my home directory and
+    installs (or updates) the programs I use, such that it can be re-run gracefully
 
 ## Setup
 
-### Fetch the dotfiles and throw them in iCloud Drive
+### 1. Fetch the dotfiles and throw them in iCloud Drive
 
 Fork this repo and clone it into your iCloud Drive as "dotfiles" like so:
 
@@ -23,7 +21,7 @@ Fork this repo and clone it into your iCloud Drive as "dotfiles" like so:
 $ git clone https://github.com/searls/icloud-dotfiles.git "~/Library/Mobile Documents/com~apple~CloudDocs/dotfiles"
 ```
 
-### Create an encrypted disk image
+### 2. Create an encrypted disk image
 
 Create an encrypted disk image named "secure.dmg" with volume label
 "secure-dotfiles" and place it inside the "dotfiles" directory.
@@ -45,7 +43,7 @@ while you're logged in:
 
 <img width="668" alt="screen shot 2016-12-22 at 1 18 46 pm" src="https://cloud.githubusercontent.com/assets/79303/21435696/2f2621a8-c849-11e6-991a-cda9edff1c9c.png">
 
-### Run the setup script
+### 3. Run the setup script
 
 Now, run the initial setup script (which you can review
 [here](https://github.com/searls/icloud-dotfiles/blob/master/bin/setup-new-mac)):

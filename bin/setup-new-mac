@@ -34,7 +34,7 @@ else
 fi
 
 # Brew installations
-for pkg in bash-completion git nodenv rbenv postgresql wget tree chromedriver phantomjs; do
+for pkg in bash-completion git nodenv node-build rbenv ruby-build postgresql wget tree chromedriver phantomjs; do
   if brew list -1 | grep -q "^${pkg}\$"; then
     echo "Package '$pkg' is installed; updating:"
     brew upgrade "$pkg" --cleanup || true
