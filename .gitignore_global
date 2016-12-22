@@ -1,0 +1,4 @@
+.DS_Store
+/*.xcodeproj/xcuserdata/justin.xcuserdatad
+/.vscode
+npm-debug.log

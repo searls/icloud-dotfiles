@@ -1,0 +1,20 @@
+[push]
+	default = current
+[branch]
+	autosetuprebase = always
+	autosetupmerge = true
+[user]
+	name = Justin Searls
+	email = searls@gmail.com
+[core]
+	editor = mvim -f
+	excludesfile = /Users/justin/.gitignore_global
+	mergetool = opendiff
+[heroku]
+	account = personal
+[merge]
+	tool = opendiff
+[diff]
+	renames = true
+[help]
+	autocorrect = 1

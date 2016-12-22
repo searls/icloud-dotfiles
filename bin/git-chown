@@ -1,0 +1,23 @@
+#!/bin/bash -e
+
+# Usage:
+#  $ git chown <repo name> <old owner> <new owner>
+# Example:
+#  $ git chown lineman testdouble linemanjs
+
+REPO_NAME=$1
+OLD_OWNER=$2
+NEW_OWNER=$3
+SED_PATTERN="s/$OLD_OWNER\/$REPO_NAME/$NEW_OWNER\/$REPO_NAME/g"
+
+echo "--> searching for '$OLD_OWNER/$REPO_NAME' and replacing with '$NEW_OWNER/$REPO_NAME'"
+git grep -l "$OLD_OWNER/$REPO_NAME" | xargs sed -i .gitchownbk "$SED_PATTERN"
+
+echo "--> altering any git remotes' URLs"
+sed -i .gitchownbk "$SED_PATTERN" .git/config
+
+echo "--> cleaning out sed's backup files (*.gitchownbk)"
+find . -name "*.gitchownbk" | xargs rm
+
+echo "--> remaining references to '$OLD_OWNER' in repo:"
+git grep "$OLD_OWNER"

@@ -1,0 +1,65 @@
+#!/usr/bin/env node
+
+/**
+ * Activates all Philips Hue scenes for a given name, optionally
+ *  restricted to a particular group (the new app seems to make scenes universal
+ *  across groups so it may be necessary to look up the group ID associated with
+ *  the room you want to be affected.
+ *
+ * Example usage:
+ *
+ * $ hue-ci "Office Green" 9
+ *
+ * Requires a HUE_IP (e.g. '10.0.1.6') and HUE_TOKEN (the "user name" portion of
+ *  the HTTP API URL string) to be set as env vars.
+ */
+
+var http = require('http')
+
+var hueIp = process.env['HUE_IP']
+var hueToken = process.env['HUE_TOKEN']
+var sceneName = process.argv[2]
+var groupId = process.argv[3] || 0
+
+var baseUrl = 'http://' + hueIp + '/api/' + hueToken
+var globalTimeout = setTimeout(function () {
+  console.error('Hue API timed out')
+  process.exit(1)
+}, 700)
+
+http.get(baseUrl, function (res) {
+  var body = ''
+  res.on('data', function (data) { body += data.toString() })
+  res.on('end', function () {
+    var hueConfig = JSON.parse(body, null, 2)
+
+    Object.keys(hueConfig.scenes).forEach(function (sceneId) {
+      var scene = hueConfig.scenes[sceneId]
+      if (scene.name === sceneName) {
+        put(baseUrl + '/groups/' + groupId + '/action', {
+          on: true,
+          scene: sceneId
+        }, function (res) {
+          clearInterval(globalTimeout)
+          if (res.statusCode !== 200) {
+            console.error('Failed to set scene to ' + sceneName + '!')
+            process.exit(1)
+          }
+        })
+      }
+    })
+  })
+})
+
+var url = require('url')
+function put (uri, body, cb) {
+  var bodyString = JSON.stringify(body)
+  var opts = Object.assign({}, url.parse(uri), {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': bodyString.length
+    }
+  })
+  http.request(opts, cb).write(bodyString)
+}

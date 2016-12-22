@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -e
+
+INPUT=$1
+OUTPUT=$2
+
+ffmpeg -i "$INPUT" -filter_complex "[0:v]setpts=0.5*PTS[v];[0:a]atempo=2[a]" -map "[v]" -map "[a]" "$OUTPUT"
+

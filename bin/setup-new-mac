@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+
+set -e
+
+# Create symlinks from iCloud to home directory
+cd "$HOME"
+[ ! -L icloud-drive ] && ln -s "$HOME/Library/Mobile Documents/com~apple~CloudDocs" icloud-drive
+[ ! -L lolbrary ] && ln -s "$HOME/Library" lolbrary
+for link in .gemrc .gitconfig .gitignore_global .homebridge .profile .vim .vimrc bin; do
+  if [ -L "$HOME/$link" ]; then
+    echo "Link '$link' already exists"
+  else
+    ln -s "icloud-drive/dotfiles/$link" .
+  fi
+done
+
+## link .ssh config
+mkdir -p "$HOME/.ssh"
+cd "$HOME/.ssh"
+[ ! -L config ] && ln -s ../icloud-drive/dotfiles/.ssh/config .
+cd ..
+
+# Set macOS default hidden settings
+
+## Disabling shadows on windows when taking screenshots - requires killall SystemUIServer
+defaults write com.apple.screencapture disable-shadow -bool true
+
+# Install things
+if command -v brew; then
+  echo "Homebrew installed; updating:"
+  brew update
+else
+  /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+fi
+
+# Brew installations
+for pkg in bash-completion git nodenv rbenv postgresql wget tree chromedriver phantomjs; do
+  if brew list -1 | grep -q "^${pkg}\$"; then
+    echo "Package '$pkg' is installed; updating:"
+    brew upgrade "$pkg" --cleanup || true
+  else
+    brew install "$pkg"
+  fi
+done
+
+if brew list -1 | grep -q "^universal-ctags\$"; then
+  echo "Package 'universal-ctags' is installed; updating:"
+  brew upgrade bash-completion --cleanup || true
+else
+  brew tap universal-ctags/universal-ctags
+  brew install --HEAD universal-ctags
+fi
+
+## Set up node
+NODE_VERSION="6.9.2"
+if [ -d ".nodenv/versions/$NODE_VERSION" ]; then
+  echo "Node $NODE_VERSION already installed"
+else
+  nodenv install "$NODE_VERSION"
+fi
+eval "$(nodenv init -)"
+nodenv global "$NODE_VERSION"
+
+## Set up ruby
+RUBY_VERSION="2.3.3"
+if [ -d ".rbenv/versions/$RUBY_VERSION" ]; then
+  echo "Ruby $RUBY_VERSION already installed"
+else
+  rbenv install "$RUBY_VERSION"
+fi
+eval "$(rbenv init -)"
+rbenv global "$RUBY_VERSION"
+gem install bundler
+
+# Mount secure dotfiles
+if [ -d /Volumes/secure-dotfiles ]; then
+  echo "Secure dotfiles already mounted"
+else
+  echo "Mounting secure dotfiles"
+  open icloud-drive/dotfiles/secure.dmg
+fi
+
+# Run profile
+source .profile
+

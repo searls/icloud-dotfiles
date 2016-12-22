@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+git grep "$1" -- './*' ':!dist/' ':!README.md' ':!docs/'
+

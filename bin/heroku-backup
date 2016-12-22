@@ -1,0 +1,6 @@
+#!/bin/bash -e
+
+name=${1-latest.dump}
+
+heroku pgbackups:capture
+curl -o "$name" `heroku pgbackups:url`

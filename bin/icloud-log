@@ -1,0 +1,3 @@
+#!/bin/bash -e
+
+brctl log --wait --shorten --multiline=no

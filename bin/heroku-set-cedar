@@ -1,0 +1,21 @@
+#!/bin/bash -e
+PREV_PWD=`pwd`
+mkdir -p "$HOME/tmp"
+cd "$HOME/tmp"
+
+echo "-----> Cloning into $1"
+heroku git:clone -a $1
+cd $1
+
+echo "-----> Setting stack to cedar"
+heroku stack:set cedar
+
+echo "-----> Making an arbitrary commit to push"
+touch README.md
+echo "" >> README.md
+git add README.md
+git commit -m "touch readme"
+
+echo "-----> Deploying app"
+git push
+cd "$PREV_PWD"

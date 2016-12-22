@@ -1,0 +1,8 @@
+#!/bin/sh
+USAGE="<commit-ish>"
+. git-sh-setup
+test -n "$*" || usage
+
+next_commit=$(git rev-list --reverse HEAD..$1 | head -1)
+test -n "$next_commit" || die "no commit found towards $1"
+git checkout $next_commit

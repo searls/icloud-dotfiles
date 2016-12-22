@@ -1,0 +1,26 @@
+#!/usr/bin/env ruby
+
+require 'bundler'
+Bundler.require
+
+require "open-uri"
+require "rubygems"
+require "json"
+
+USERNAME = "searls"
+
+query = ARGV.first.downcase
+
+gists = JSON.parse(open("https://api.github.com/users/#{USERNAME}/gists").read)['gists']
+
+gists.each do |gist|
+  files = "(%s)" % gist['files'].join(', ')
+  description = gist['description']
+  unless description.to_s.downcase.include?(query) || files.downcase.include?(query)
+    next
+  end
+  puts description if description
+  puts files
+  puts "https://gist.github.com/gists/#{gist['repo']}"
+  puts
+end

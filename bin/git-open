@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+
+## git-open: a simple script to open the github webapge of your current
+## repo in the current branch
+##
+## Options:
+##   repo name (git open origin)
+##   repo and branch name (git open origin master)
+##
+## This code assumes your fork is "searls"
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You can find the GNU General Public License at:
+##   http://www.gnu.org/licenses/
+repo = ARGV.empty? ? 'searls' : ARGV.first
+giturl = `git config --get remote.#{repo}.url`.chomp
+if giturl.empty?
+  puts "Not a git repository or no remote.#{repo}.url set"
+  puts "You can pass a remote name:"
+  puts "\t#{$0} origin"
+  puts ""
+end
+giturl.gsub!(/git@(.*)\:/, "https://\\1/")
+
+current_branch = ARGV[1] || `git symbolic-ref HEAD 2>/dev/null`.
+  scan(/^refs\/heads\/(\S+)$/).
+  map { |a| a.first.gsub('refs/heads/', '') }
+giturl.gsub!(/\.git$/, "/tree/#{current_branch}")
+
+puts "Opening #{giturl}"
+exec "open #{giturl}"
