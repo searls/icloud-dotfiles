@@ -8,7 +8,7 @@ The basic gist of this:
 1. Store dotfiles in iCloud Drive
 2. Store secure dotfiles (e.g. environment variables) in an encrypted disk image
    in iCloud Drive
-3. Symlink iCloud Drive to my home directory
+3. Symlink iCloud Drive to my home directory as `~/icloud-drive`
 4. Symlink all my dotfiles from iCloud Drive to my home directory
 5. Have a script that installs (or updates) all of the programs I
    typically need, such that it can be re-run gracefully
