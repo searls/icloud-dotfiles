@@ -75,14 +75,6 @@ eval "$(rbenv init -)"
 rbenv global "$RUBY_VERSION"
 gem install bundler
 
-# Mount secure dotfiles
-if [ -d /Volumes/secure-dotfiles ]; then
-  echo "Secure dotfiles already mounted"
-else
-  echo "Mounting secure dotfiles"
-  open icloud-drive/dotfiles/secure.dmg
-fi
-
 # Run profile
 source .profile
 
