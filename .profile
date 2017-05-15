@@ -38,8 +38,8 @@ export EDITOR="$VISUAL"
 ## Reference the location of iCloud Drive
 export ICLOUD_DRIVE="$HOME/icloud-drive"
 
-## Source private (encrypted) ENV variables via automounted disk image
-source "/Volumes/secure-dotfiles/.env"
+## Source ENV variables
+source "$ICLOUD_DRIVE/dotfiles/.env"
 
 ## Increase limit of open file descriptors because watch processes
 ulimit -n 10000
