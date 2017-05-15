@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -e
+sudo launchctl unload /System/Library/LaunchDaemons/com.apple.audio.coreaudiod.plist
+sudo launchctl load /System/Library/LaunchDaemons/com.apple.audio.coreaudiod.plist
+
+

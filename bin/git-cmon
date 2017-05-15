@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -e
+
+echo "<---- git fetch"
+git fetch --all
+echo "<---- git fetch submodules"
+git submodule update --recursive --remote

@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -e
+touch /Users/justin/poop
+
+if ! command -v whenkani > /dev/null; then
+  echo "error: whenkani not found. 'gem install whenkani' first"
+  exit 1
+fi
+if ! command -v imessage > /dev/null; then
+  echo "error: imessage script not found. Verify it's in your PATH"
+  exit 1
+fi
+
+if whenkani; then
+  imessage "Time to study Japanese! https://www.wanikani.com/dashboard"
+else
+  imessage "mata"
+fi

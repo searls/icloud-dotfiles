@@ -3,7 +3,7 @@ syntax on
 filetype plugin indent on
 
 " type \rt to recreate ctags (typically after adding a file/type/method)
-map <Leader>rt :!ctags --tag-relative --extra=+f -Rf.git/tags --exclude=.git --exclude=pkg --exclude=node_modules --languages=-sql<CR><CR>
+map <Leader>rt :!ctags --tag-relative=yes --extras=+f -Rf.git/tags --exclude=.git --exclude=pkg --exclude=node_modules --languages=-sql<CR><CR>
 "" store ctags inside untracked git folder
 set tags+=.git/tags
 
@@ -25,6 +25,12 @@ set relativenumber
 set suffixesadd=.rb
 set path+=lib/**,test/**
 let g:ruby_path = &path
+
+" from https://github.com/tpope/gem-ctags
+autocmd FileType ruby let &l:tags = pathogen#legacyjoin(pathogen#uniq(
+      \ pathogen#split(&tags) +
+      \ map(split($GEM_PATH,':'),'v:val."/gems/*/tags"')))
+
 
 " non-cargo-cult
 set directory=$HOME/.vim/swapfiles//

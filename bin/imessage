@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -e
+
+OSA_SCRIPT="$HOME/bin/script/imessage.scpt"
+MESSAGE=${1-"I am a message"}
+RECIPIENT=${2-"searls@gmail.com"}
+
+echo "Texting '$MESSAGE' to '$RECIPIENT'"
+osascript "$OSA_SCRIPT" "$RECIPIENT" "$MESSAGE"

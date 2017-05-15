@@ -52,3 +52,5 @@ alias gc="git commit"
 ## load custom PS1 prompt
 source $HOME/bin/ps1
 
+
+export PATH="$HOME/.cargo/bin:$PATH"
