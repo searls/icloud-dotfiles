@@ -4,11 +4,11 @@
 	autosetuprebase = always
 	autosetupmerge = true
 [user]
-	name = Justin Searls
-	email = searls@gmail.com
+	name = Jeremy Searls
+	email = searls@me.com
 [core]
 	editor = mvim -f
-	excludesfile = /Users/justin/.gitignore_global
+	excludesfile = /Users/JeremySearls/.gitignore_global
 	mergetool = opendiff
 [heroku]
 	account = personal

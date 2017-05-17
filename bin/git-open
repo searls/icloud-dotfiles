@@ -16,7 +16,7 @@
 ##
 ## You can find the GNU General Public License at:
 ##   http://www.gnu.org/licenses/
-repo = ARGV.empty? ? 'searls' : ARGV.first
+repo = ARGV.empty? ? 'jersearls' : ARGV.first
 giturl = `git config --get remote.#{repo}.url`.chomp
 if giturl.empty?
   puts "Not a git repository or no remote.#{repo}.url set"

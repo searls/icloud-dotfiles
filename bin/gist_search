@@ -7,7 +7,7 @@ require "open-uri"
 require "rubygems"
 require "json"
 
-USERNAME = "searls"
+USERNAME = "jersearls"
 
 query = ARGV.first.downcase
 
