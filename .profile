@@ -15,7 +15,7 @@ fi
 PATH="$HOME/bin:$PATH"
 
 ## Ruby binstubs (note: this can be exploited at untrusted working directories!)
-PATH="./bin:$PATH"
+PATH="$PATH:./bin"
 
 
 # Bash settings
@@ -32,8 +32,8 @@ fi
 # Other Customization
 
 ## Editor registration for git, etc
-export VISUAL="mvim -f"
 export EDITOR="$VISUAL"
+export LC_CTYPE="en_US.UTF-8"
 
 ## Reference the location of iCloud Drive
 export ICLOUD_DRIVE="$HOME/icloud-drive"
