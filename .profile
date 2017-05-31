@@ -18,16 +18,22 @@ PATH="$HOME/bin:$PATH"
 PATH="$PATH:./bin"
 
 
-# Bash settings
+# Shell settings
 
-## stickier .bash_history
-shopt -s histappend
+if [[ "$SHELL" == *zsh ]]; then
+  # Nothing to see here
+  true
+elif [[ "$SHELL" == *bash ]]; then
+  ## Bash settings
 
-## Set up tab-completion (requires `brew install bash-completion`)
-if [ -f $(brew --prefix)/etc/bash_completion ]; then
-  source $(brew --prefix)/etc/bash_completion
+  ### stickier .bash_history
+  shopt -s histappend
+
+  ### Set up tab-completion (requires `brew install bash-completion`)
+  if [ -f $(brew --prefix)/etc/bash_completion ]; then
+    source $(brew --prefix)/etc/bash_completion
+  fi
 fi
-
 
 # Other Customization
 

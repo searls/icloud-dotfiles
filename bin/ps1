@@ -120,3 +120,6 @@ else \
   # @2 - Prompt when not in GIT repo
   echo " '$Yellow$PathShort$Color_Off' $ "; \
 fi)'
+
+# TODO port to zsh
+export PROMPT="$ "
