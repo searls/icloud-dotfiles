@@ -50,6 +50,7 @@ compiler rake
 
 " easier 80c's paragraph reformating with gq
 au BufRead,BufNewFile *.md setlocal textwidth=80
+au BufNewFile,BufRead *.us setlocal ft=html
 
 " easier split navigation with C-JKLH instead of hitting C-W first
 set splitbelow
