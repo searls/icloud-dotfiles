@@ -7,7 +7,7 @@ cd "$HOME"
 [ ! -L icloud-drive ] && ln -s "$HOME/Library/Mobile Documents/com~apple~CloudDocs" icloud-drive
 [ ! -L lolbrary ] && ln -s "$HOME/Library" lolbrary
 
-for link in .gemrc .gitconfig .gitignore_global .homebridge .profile .bashrc .vim .vimrc bin .vscode .zprofile .zshrc; do
+for link in .gemrc .gitconfig .gitignore_global .homebridge .profile .bashrc .vim .vimrc bin .vscode .zprofile .zshenv; do
   if [ -L "$HOME/$link" ]; then
     echo "Link '$link' already exists"
   else
