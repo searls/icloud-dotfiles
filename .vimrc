@@ -60,9 +60,6 @@ nnoremap <C-K> <C-W><C-K>
 nnoremap <C-L> <C-W><C-L>
 nnoremap <C-H> <C-W><C-H>
 
-" use fzf for fuzzy-finding (assumes brew install fzf installation!)
-set rtp+=/usr/local/opt/fzf
-
 " @tenderlove neckbeard settings
 let ruby_space_errors = 1
 let c_space_errors = 1

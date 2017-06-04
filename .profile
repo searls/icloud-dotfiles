@@ -17,8 +17,7 @@ PATH="$HOME/bin:$PATH"
 ## Ruby binstubs (note: this can be exploited at untrusted working directories!)
 PATH="$PATH:./bin"
 
-
-# Shell settings
+# Shell-specific settings
 
 if [[ "$SHELL" == *zsh ]]; then
   # Nothing to see here
@@ -46,6 +45,9 @@ export ICLOUD_DRIVE="$HOME/icloud-drive"
 
 ## Source ENV variables
 source "$ICLOUD_DRIVE/dotfiles/.env"
+
+## Set fzf to use rg like so for ctrl-t in shell:
+export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow --glob "!.git/*"'
 
 ## Increase limit of open file descriptors because watch processes
 ulimit -n 10000
