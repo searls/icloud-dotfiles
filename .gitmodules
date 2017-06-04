@@ -25,3 +25,6 @@
 [submodule ".vim/bundle/vim-commentary"]
 	path = .vim/bundle/vim-commentary
 	url = git://github.com/tpope/vim-commentary.git
+[submodule ".vim/bundle/vim-emoji"]
+	path = .vim/bundle/vim-emoji
+	url = git@github.com:junegunn/vim-emoji.git
