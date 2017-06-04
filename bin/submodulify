@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+dirname="$1"
+backup="$dirname-bak"
+
+echo "<--- going to convert $dirname into a submodule"
+git mv "$dirname" "$backup"
+git commit -m "(1 of 3): converting $dirname to submodule"
+
+cd "$backup"
+git_url=$(git remote get-url origin)
+cd ..
+echo "<--- repo is at $git_url"
+
+git submodule add "$git_url" "$dirname"
+git add "$dirname"
+git commit -m "(2 of 3): commit plugin as submodule"
+
+echo "<--- Done! Deleting the original $dirname now"
+git rm -rf "$backup"
+git commit -m "(3 of 3): deleting original checkout ref"
