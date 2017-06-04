@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Run this from a cwd that contains a git clone inside of a
+# git repo that you want to delete and convert to a proper submodule
 
 set -e
 
@@ -20,4 +23,5 @@ git commit -m "(2 of 3): commit $dirname as submodule"
 
 echo "<--- Done! Deleting the original $dirname now"
 rm -rf "$backup"
+git add "$backup"
 git commit -m "(3 of 3): deleting old $dirname clone"
