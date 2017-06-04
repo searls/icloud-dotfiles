@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+
+dotfiles_base = "#{ENV['ICLOUD_DRIVE']}/dotfiles/project-dotfiles"
+code_base = "#{ENV['HOME']}/code"
+
+puts "Searching for project-dotfiles in #{dotfiles_base}"
+Dir["#{dotfiles_base}/*"].each do |org|
+  Dir["#{org}/*"].each do |dotfiles_dir|
+    project_dir = dotfiles_dir.gsub(dotfiles_base, code_base)
+    if File.directory?(project_dir)
+      dotfiles = Dir.glob("#{dotfiles_dir}/*", File::FNM_DOTMATCH)
+      (dotfiles - ["#{dotfiles_dir}/.", "#{dotfiles_dir}/.."]).each do |file|
+        link_dest = "#{project_dir}/#{File.basename(file)}"
+        if !File.exist?(link_dest)
+          puts "Linking #{link_dest}"
+          File.symlink(file, link_dest)
+        else
+          puts "Link already exists #{link_dest} - Skipping."
+        end
+      end
+    else
+      puts "Dotfiles found in #{dotfiles_dir} but project not cloned. Skipping."
+    end
+  end
+end
+
+

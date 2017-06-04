@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# necessary because project-specific dotfiles will almost always match a global
+# or project-level gitignore, so we need to make sure we add them by force here
+
+git add --force "$ICLOUD_DRIVE/dotfiles/project-dotfiles"
+git status
