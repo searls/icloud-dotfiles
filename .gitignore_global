@@ -2,3 +2,5 @@
 /*.xcodeproj/xcuserdata/justin.xcuserdatad
 /.vscode
 npm-debug.log
+.vimrc
+.rgignore

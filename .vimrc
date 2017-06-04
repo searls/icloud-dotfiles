@@ -43,6 +43,11 @@ set guifont=Source\ Code\ Pro:h22
 autocmd! GUIEnter * set vb t_vb= " disable audible bell in macvim
 set visualbell t_vb= " disable audible bell in terminal
 
+" use ripgrep for grep
+set grepprg=rg\ --vimgrep
+
+" allow project specific vimrcs
+set exrc
 
 " project-specific but I use it a lot so here goes
 set makeprg=rake\ test
