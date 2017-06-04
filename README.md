@@ -16,7 +16,7 @@ The basic gist of this:
 Fork this repo and clone it into your iCloud Drive as "dotfiles" like so:
 
 ```
-$ git clone https://github.com/searls/icloud-dotfiles.git "~/Library/Mobile Documents/com~apple~CloudDocs/dotfiles"
+$ git clone --recursive https://github.com/searls/icloud-dotfiles.git "~/Library/Mobile Documents/com~apple~CloudDocs/dotfiles"
 ```
 
 ### 2. Run the setup script
