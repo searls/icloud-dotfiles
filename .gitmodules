@@ -34,3 +34,6 @@
 [submodule ".vim/bundle/vim-projectionist"]
 	path = .vim/bundle/vim-projectionist
 	url = git://github.com/tpope/vim-projectionist.git
+[submodule ".vim/bundle/vim-pug"]
+	path = .vim/bundle/vim-pug
+	url = git://github.com/digitaltoad/vim-pug.git
