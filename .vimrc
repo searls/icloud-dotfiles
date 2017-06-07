@@ -38,13 +38,23 @@ let g:airline_theme='light'
 autocmd BufWritePre * :%s/\s\+$//e " trim trailing whitespace on save. YOLO!
 autocmd BufLeave,FocusLost * silent! wall " auto-save on blur. YOLO!
 set autoread " automatically reload when files change because YOLO!
-set clipboard=unnamed " share the macOS pasteboard instead of a Vim register
+if $TMUX == ''
+  set clipboard+=unnamed " share the macOS pasteboard instead of a Vim register
+endif
 set guifont=Source\ Code\ Pro:h22
 autocmd! GUIEnter * set vb t_vb= " disable audible bell in macvim
 set visualbell t_vb= " disable audible bell in terminal
 
 " use ripgrep for grep
 set grepprg=rg\ --vimgrep
+
+" use ctrl-p for fzf tab split
+nnoremap <silent> <C-p> :Files<CR>
+imap <C-x><C-l> <plug>(fzf-complete-line)
+
+" add a Find command using ripgrep
+command! -bang -nargs=* Find call fzf#vim#grep('rg --column --line-number --no-heading --fixed-strings --ignore-case --follow --glob "!.git/*" --color "always" '.shellescape(<q-args>), 1, <bang>0)
+nnoremap <leader>ff :Find<CR>
 
 " allow project specific vimrcs
 set exrc
