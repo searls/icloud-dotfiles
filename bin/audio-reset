@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -e
+
+ps aux | grep 'coreaudio[d]' | awk '{print $2}' | xargs sudo kill
+
