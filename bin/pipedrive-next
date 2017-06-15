@@ -1,0 +1,130 @@
+#!/usr/bin/env ruby
+
+# A silly utility for getting more productive with  Pipedrive CRM activities
+
+USAGE=<<~USAGE
+Usage:
+ `pipedrive-next details`
+   - Will search for the next incomplete activity (that with the oldest date),
+     find the person linked to the activity, then give back JSON with
+     both the person's email and a BCC to the deal. If there's no deal it'll
+     fallback to the general dropbox BCC address.
+
+ `pipedrive-next complete [activity-id] [number-of-days]`
+   - Will mark [activity-id] complete, and
+     schedule a new activity for number-of-days out (e.g. 15)
+USAGE
+
+require 'net/http'
+require 'net/https'
+require 'json'
+require 'date'
+
+class Activity
+  attr_reader :id, :person_id, :deal_id, :org_id, :name, :email, :bcc
+
+  def initialize(json)
+    @id = json["id"]
+    @person_id = json["person_id"]
+    @deal_id = json["deal_id"]
+    @org_id = json["org_id"]
+    @name = json["person_name"]
+    @email = get_email_for(json["person_id"])
+    @bcc = json["deal_dropbox_bcc"] || json["person_dropbox_bcc"]
+  end
+
+end
+
+def send_request(endpoint, options = {}, method = :get)
+  api_key = ENV['PIPEDRIVE_API_KEY']
+  url = "https://api.pipedrive.com/v1/#{endpoint}"
+  response = JSON.parse case method
+  when :get
+    options = options.merge(:api_token => api_key)
+    url = URI("#{url}?#{URI.encode_www_form(options)}")
+    Net::HTTP.get(url)
+  when :post
+    Net::HTTP.post_form(URI("#{url}?api_token=#{api_key}"), options).body
+  when :patch
+    http = Net::HTTP.new("https://api.pipedrive.com", 443)
+    http.use_ssl = true
+    request = Net::HTTP::Put.new(URI("#{url}?api_token=#{api_key}"))
+    request.set_form_data(options)
+    http.request(request).body
+  else
+    raise "Unknown request type #{method}"
+  end
+
+  raise "API request failed.\n\n  URI: #{url}" if response["success"] != true
+
+  response["data"]
+end
+
+def get_email_for(person_id)
+  response = send_request("persons/#{person_id}")
+  email = response["email"].detect { |email|
+    email["primary"]
+  } || response["email"].first
+  email["value"]
+end
+
+def next_activity
+  response = send_request(:activities,
+    :start => 0,
+    :limit => 1
+  )
+  Activity.new(response.first)
+end
+
+def get_activity(id)
+  response = send_request("activities/#{id}")
+  Activity.new(response)
+end
+
+def next_activity_info
+  activity = next_activity
+  {
+    :id => activity.id,
+    :to => "\"#{activity.name}\"<#{activity.email}>",
+    :bcc => activity.bcc
+  }.to_json
+end
+
+def schedule_next_activity!(activity, number_of_days)
+  send_request(:activities, {
+    :subject => 'Follow-up',
+    :done => 0,
+    :type => 'email',
+    :due_date => (Date.today + number_of_days).to_s,
+    :deal_id => activity.deal_id,
+    :person_id => activity.person_id,
+    :org_id => activity.org_id,
+    :note => "Created by Justin's pipedrive-next script"
+  }, :post)
+end
+
+def mark_activity_complete!(activity)
+  send_request("activities/#{activity.id}", {
+    :done => 1
+  }, :patch)
+end
+
+def complete_and_schedule_out(activity_id, number_of_days)
+  activity = get_activity(activity_id)
+  schedule_next_activity!(activity, number_of_days)
+  mark_activity_complete!(activity)
+  puts "Marked activity complete and scheduled next one out #{number_of_days}"
+end
+
+case ARGV[0]
+  when "details"
+    puts next_activity_info
+  when "complete"
+    activity_id = Integer(ARGV[1])
+    number_of_days = Integer(ARGV[2])
+    complete_and_schedule_out(activity_id, number_of_days)
+  else
+    puts USAGE
+    exit 1
+end
+
