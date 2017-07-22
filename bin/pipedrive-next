@@ -18,6 +18,7 @@ USAGE
 require 'net/http'
 require 'net/https'
 require 'json'
+require 'yaml'
 require 'date'
 
 class Activity
@@ -76,6 +77,10 @@ def next_activity
   Activity.new(response.first)
 end
 
+def get_deal(id)
+  send_request("deals/#{id}")
+end
+
 def get_activity(id)
   response = send_request("activities/#{id}")
   Activity.new(response)
@@ -86,11 +91,16 @@ def next_activity_info
   {
     :id => activity.id,
     :to => "\"#{activity.name}\"<#{activity.email}>",
-    :bcc => activity.bcc
+    :bcc => activity.bcc,
+    :body => <<~BODY
+      Name: #{activity.name}
+      Deal details: #{YAML.dump(get_deal(activity.deal_id))}
+    BODY
   }.to_json
 end
 
 def schedule_next_activity!(activity, number_of_days)
+  return unless number_of_days > 0
   send_request(:activities, {
     :subject => 'Follow-up',
     :done => 0,
@@ -101,19 +111,20 @@ def schedule_next_activity!(activity, number_of_days)
     :org_id => activity.org_id,
     :note => "Created by Justin's pipedrive-next script"
   }, :post)
+  puts "Scheduled out next activity in #{number_of_days} days"
 end
 
 def mark_activity_complete!(activity)
   send_request("activities/#{activity.id}", {
     :done => 1
   }, :patch)
+  puts "Activity marked complete"
 end
 
 def complete_and_schedule_out(activity_id, number_of_days)
   activity = get_activity(activity_id)
   schedule_next_activity!(activity, number_of_days)
   mark_activity_complete!(activity)
-  puts "Marked activity complete and scheduled next one out #{number_of_days}"
 end
 
 case ARGV[0]
