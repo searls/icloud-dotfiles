@@ -14,10 +14,6 @@ fi
 ## My own scripts
 PATH="$HOME/bin:$PATH"
 
-## Ruby binstubs (note: this can be exploited at untrusted working directories!)
-PATH="./bin:$PATH"
-
-
 # Bash settings
 
 ## stickier .bash_history
