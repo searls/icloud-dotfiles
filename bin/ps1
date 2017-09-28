@@ -99,10 +99,10 @@ get_status()
   if [ $exit_code -ne 0 ]
   then
     #hue-ci "Office Red" 9
-    echo "💔 "
+    echo "●"
   else
     #hue-ci "Office Green" 9
-    echo "💚 "
+    echo "○"
   fi
 }
 
