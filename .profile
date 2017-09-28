@@ -54,7 +54,6 @@ ulimit -n 10000
 
 ## Set a few aliases
 alias be="bundle exec"
-alias gpp="git pull --rebase && git push"
 alias gc="git commit"
 
 ## load custom PS1 prompt
