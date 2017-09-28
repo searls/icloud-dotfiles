@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+cd ~/code/testdouble/present
+heroku run rails runner 'puts User.where(:full_time => true, :active => true).map(&:email).sort.join(",\n")'
