@@ -57,7 +57,8 @@ fi
 
 ## Set shell to zsh
 
-sudo dscl . -create /Users/$USER UserShell /usr/local/bin/zsh
+# Disabled until I get around to configuring zsh
+#sudo dscl . -create /Users/$USER UserShell /usr/local/bin/zsh
 
 ## Set up node
 NODE_VERSION="6.9.2"
@@ -70,7 +71,7 @@ eval "$(nodenv init -)"
 nodenv global "$NODE_VERSION"
 
 ## Set up ruby
-RUBY_VERSION="2.3.3"
+RUBY_VERSION="2.4.1"
 if [ -d ".rbenv/versions/$RUBY_VERSION" ]; then
   echo "Ruby $RUBY_VERSION already installed"
 else
