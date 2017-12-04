@@ -53,6 +53,8 @@ nnoremap <silent> <C-p> :Files<CR>
 imap <C-x><C-l> <plug>(fzf-complete-line)
 " use \tt to open a new tab from the fzf dialog
 nnoremap <leader>tt :tabnew<CR>:Files<CR>
+" use \dd to run Dispatch (usually a solo test file)
+nnoremap <leader>dd :Dispatch<CR>
 
 " add a Find command using ripgrep
 command! -bang -nargs=* Find call fzf#vim#grep('rg --column --line-number --no-heading --fixed-strings --ignore-case --follow --glob "!.git/*" --color "always" '.shellescape(<q-args>), 1, <bang>0)
