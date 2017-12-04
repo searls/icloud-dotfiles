@@ -55,6 +55,8 @@ imap <C-x><C-l> <plug>(fzf-complete-line)
 nnoremap <leader>tt :tabnew<CR>:Files<CR>
 " use \dd to run Dispatch (usually a solo test file)
 nnoremap <leader>dd :Dispatch<CR>
+" use \qq to format the current paragraph/block to 80c's
+nnoremap <leader>qq gqap<CR>
 
 " add a Find command using ripgrep
 command! -bang -nargs=* Find call fzf#vim#grep('rg --column --line-number --no-heading --fixed-strings --ignore-case --follow --glob "!.git/*" --color "always" '.shellescape(<q-args>), 1, <bang>0)
@@ -62,6 +64,10 @@ nnoremap <leader>ff :Find<CR>
 
 " allow project specific vimrcs
 set exrc
+
+" enable spellchecking on markdown
+autocmd BufRead,BufNewFile *.md setlocal spell
+set complete+=kspell
 
 " project-specific but I use it a lot so here goes
 set makeprg=rake\ test
