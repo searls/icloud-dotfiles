@@ -5,3 +5,5 @@ npm-debug.log
 .vimrc
 .rgignore
 .projections.json
+.ruby-version
+.node-version
