@@ -37,7 +37,7 @@ fi
 # Other Customization
 
 ## Editor registration for git, etc
-export EDITOR="$VISUAL"
+export EDITOR="vim"
 export LC_CTYPE="en_US.UTF-8"
 
 ## Reference the location of iCloud Drive
