@@ -57,6 +57,8 @@ nnoremap <leader>tt :tabnew<CR>:Files<CR>
 nnoremap <leader>dd :Dispatch<CR>
 " use \qq to format the current paragraph/block to 80c's
 nnoremap <leader>qq gqap<CR>
+" use \cc to copy the current visual selection
+nnoremap <leader>cc :call system('pbcopy', @0)<CR>
 
 " add a Find command using ripgrep
 command! -bang -nargs=* Find call fzf#vim#grep('rg --column --line-number --no-heading --fixed-strings --ignore-case --follow --glob "!.git/*" --color "always" '.shellescape(<q-args>), 1, <bang>0)
