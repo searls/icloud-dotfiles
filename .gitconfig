@@ -7,14 +7,21 @@
 	name = Justin Searls
 	email = searls@gmail.com
 [core]
-	editor = mvim -f
+	editor = vim
 	excludesfile = /Users/justin/.gitignore_global
 	mergetool = opendiff
 [heroku]
 	account = personal
 [merge]
-	tool = opendiff
+	tool = vimdiff
+	conflictstyle = diff3
 [diff]
 	renames = true
 [help]
 	autocorrect = 1
+[mergetool]
+	prompt = false
+[github]
+	user = searls
+[credential]
+	helper = osxkeychain
