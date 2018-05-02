@@ -38,7 +38,7 @@ else
 fi
 
 # Brew installations
-for pkg in zsh bash-completion git nodenv node-build rbenv ruby-build postgresql wget tree jid jq chromedriver phantomjs heroku fzf ripgrep; do
+for pkg in vim bash-completion git nodenv node-build rbenv ruby-build postgresql wget tree jid jq chromedriver phantomjs heroku fzf ripgrep; do
   if brew list -1 | grep -q "^${pkg}\$"; then
     echo "Package '$pkg' is installed; updating:"
     brew upgrade "$pkg" --cleanup || true
