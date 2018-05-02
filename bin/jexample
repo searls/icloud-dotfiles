@@ -1,0 +1,3 @@
+#!/bin/bash
+
+~/code/searls/sentense/script/jexample "$1" "$2" | less
