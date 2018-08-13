@@ -12,10 +12,13 @@ fi
 # Additional PATH configuration
 
 ## My own scripts
-PATH="$HOME/bin:$PATH"
+export PATH="$HOME/bin:$PATH"
 
 ## Ruby binstubs (note: this can be exploited at untrusted working directories!)
-PATH="$PATH:./bin"
+export PATH="$PATH:./bin"
+
+## homebrew sbin
+export PATH="/usr/local/sbin:$PATH"
 
 # Shell-specific settings
 
@@ -48,6 +51,7 @@ source "$ICLOUD_DRIVE/dotfiles/.env"
 
 ## Set fzf to use rg like so for ctrl-t in shell:
 export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow --glob "!.git/*"'
+[ -f ~/.fzf.bash ] && source ~/.fzf.bash
 
 ## Increase limit of open file descriptors because watch processes
 ulimit -n 10000

@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+which "$@" | xargs ls -l | tr -s ' ' | cut -d' ' -f9-;
+

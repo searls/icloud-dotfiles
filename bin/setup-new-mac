@@ -38,7 +38,7 @@ else
 fi
 
 # Brew installations
-for pkg in vim bash-completion git nodenv node-build rbenv ruby-build postgresql wget tree jid jq chromedriver phantomjs heroku fzf ripgrep; do
+for pkg in vim bash-completion git nodenv node-build rbenv ruby-build postgresql wget tree jid jq heroku fzf ripgrep; do
   if brew list -1 | grep -q "^${pkg}\$"; then
     echo "Package '$pkg' is installed; updating:"
     brew upgrade "$pkg" --cleanup || true
@@ -46,6 +46,9 @@ for pkg in vim bash-completion git nodenv node-build rbenv ruby-build postgresql
     brew install "$pkg"
   fi
 done
+
+# Start postgres
+brew services start postgres
 
 if brew list -1 | grep -q "^universal-ctags\$"; then
   echo "Package 'universal-ctags' is installed; updating:"
@@ -61,7 +64,7 @@ fi
 #sudo dscl . -create /Users/$USER UserShell /usr/local/bin/zsh
 
 ## Set up node
-NODE_VERSION="6.9.2"
+NODE_VERSION="8.11.3"
 if [ -d ".nodenv/versions/$NODE_VERSION" ]; then
   echo "Node $NODE_VERSION already installed"
 else
@@ -71,7 +74,7 @@ eval "$(nodenv init -)"
 nodenv global "$NODE_VERSION"
 
 ## Set up ruby
-RUBY_VERSION="2.4.1"
+RUBY_VERSION="2.5.1"
 if [ -d ".rbenv/versions/$RUBY_VERSION" ]; then
   echo "Ruby $RUBY_VERSION already installed"
 else
