@@ -54,11 +54,21 @@ imap <C-x><C-l> <plug>(fzf-complete-line)
 " use \tt to open a new tab from the fzf dialog
 nnoremap <leader>tt :tabnew<CR>:Files<CR>
 " use \dd to run Dispatch (usually a solo test file)
-nnoremap <leader>dd :Dispatch<CR>
+nnoremap <leader>dd :w!<CR>:Dispatch<CR>
+" use ctrl-s to save and dispatch
+nnoremap <C-W> :w!<CR>:Dispatch<CR>
 " use \qq to format the current paragraph/block to 80c's
 nnoremap <leader>qq gqap<CR>
 " use \cc to copy the current visual selection
 nnoremap <leader>cc :call system('pbcopy', @0)<CR>
+" use ctrl-a to switch to alt file
+nnoremap <C-A> :w!<CR>:A<CR>
+" open quickfix with \ii
+nnoremap <leader>ii :copen<CR>
+" close quickfix with \oo
+nnoremap <leader>oo :cclose<CR>
+" close quickfix with \pry
+nnoremap <leader>pry irequire "pry"; binding.pry
 
 " add a Find command using ripgrep
 command! -bang -nargs=* Find call fzf#vim#grep('rg --column --line-number --no-heading --fixed-strings --ignore-case --follow --glob "!.git/*" --color "always" '.shellescape(<q-args>), 1, <bang>0)
