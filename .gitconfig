@@ -10,6 +10,7 @@
 	editor = vim
 	excludesfile = /Users/justin/.gitignore_global
 	mergetool = opendiff
+	autostash = true
 [heroku]
 	account = personal
 [merge]
@@ -25,3 +26,5 @@
 	user = searls
 [credential]
 	helper = osxkeychain
+[rebase]
+	autostash = true
