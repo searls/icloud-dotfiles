@@ -34,7 +34,6 @@ autocmd FileType ruby let &l:tags = pathogen#legacyjoin(pathogen#uniq(
 
 " non-cargo-cult
 set directory=$HOME/.vim/swapfiles//
-let g:airline_theme='light'
 autocmd BufWritePre * :%s/\s\+$//e " trim trailing whitespace on save. YOLO!
 autocmd BufLeave,FocusLost * silent! wall " auto-save on blur. YOLO!
 set autoread " automatically reload when files change because YOLO!
@@ -44,6 +43,19 @@ endif
 set guifont=Source\ Code\ Pro:h22
 autocmd! GUIEnter * set vb t_vb= " disable audible bell in macvim
 set visualbell t_vb= " disable audible bell in terminal
+
+" Airline
+let g:airline_theme='light'
+
+" Lint with ale + standardrb
+let g:ale_fix_on_save = 1
+let g:ale_fixers = { 'ruby': ['standardrb'] }
+let g:ale_linters = { 'ruby': ['standardrb'] }
+
+
+" Airline + Ale
+let g:airline#extensions#ale#enabled = 1
+
 
 " use ripgrep for grep
 set grepprg=rg\ --vimgrep
