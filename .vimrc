@@ -48,9 +48,9 @@ set visualbell t_vb= " disable audible bell in terminal
 let g:airline_theme='light'
 
 " Lint with ale + standardrb
+let g:ale_linters = { 'ruby': ['standardrb'], 'javascript': ['standard']  }
 let g:ale_fix_on_save = 1
 let g:ale_fixers = { 'ruby': ['standardrb'] }
-let g:ale_linters = { 'ruby': ['standardrb'] }
 
 
 " Airline + Ale
@@ -67,14 +67,18 @@ imap <C-x><C-l> <plug>(fzf-complete-line)
 nnoremap <leader>tt :tabnew<CR>:Files<CR>
 " use \dd to run Dispatch (usually a solo test file)
 nnoremap <leader>dd :w!<CR>:Dispatch<CR>
-" use ctrl-s to save and dispatch
-nnoremap <C-W> :w!<CR>:Dispatch<CR>
+" use ctrl-w to save and dispatch
+nnoremap <C-W> :w<CR>:Dispatch<CR>
+" use ctrl-a to save all
+nnoremap <C-A> :wa<CR>
+" use ctrl-q to quit
+" nnoremap <C-Q> :qa<CR>
 " use \qq to format the current paragraph/block to 80c's
 nnoremap <leader>qq gqap<CR>
 " use \cc to copy the current visual selection
 nnoremap <leader>cc :call system('pbcopy', @0)<CR>
 " use ctrl-a to switch to alt file
-nnoremap <C-A> :w!<CR>:A<CR>
+" nnoremap <C-A> :w!<CR>:A<CR>
 " open quickfix with \ii
 nnoremap <leader>ii :copen<CR>
 " close quickfix with \oo
