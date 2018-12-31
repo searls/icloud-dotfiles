@@ -60,6 +60,14 @@ let g:airline#extensions#ale#enabled = 1
 " use ripgrep for grep
 set grepprg=rg\ --vimgrep
 
+function DoubleMap(bind, command, return_to_insert)
+  exec "nmap " . a:bind . " " . a:command
+  if a:return_to_insert
+    exec "imap " . a:bind . " <ESC>" . a:command . "i"
+  else
+    exec "imap " . a:bind . " <ESC>" . a:command
+  endif
+endfunction
 " use ctrl-p for fzf tab split
 nnoremap <silent> <C-p> :Files<CR>
 imap <C-x><C-l> <plug>(fzf-complete-line)
@@ -68,9 +76,15 @@ nnoremap <leader>tt :tabnew<CR>:Files<CR>
 " use \dd to run Dispatch (usually a solo test file)
 nnoremap <leader>dd :w!<CR>:Dispatch<CR>
 " use ctrl-w to save and dispatch
-nnoremap <C-W> :w<CR>:Dispatch<CR>
-" use ctrl-a to save all
-nnoremap <C-A> :wa<CR>
+" nnoremap <C-W> :w<CR>:Dispatch<CR>
+
+" use ctrl-a to save all and then be in normal mod
+call DoubleMap("<C-A>", ":wa<CR>", 0)
+
+" use ctrl-1 to tab back
+call DoubleMap("<C-W>", ":tabprevious<CR>", 1)
+" use ctrl-2 to tab ahead
+call DoubleMap("<C-E>", ":tabnext<CR>", 1)
 " use ctrl-q to quit
 " nnoremap <C-Q> :qa<CR>
 " use \qq to format the current paragraph/block to 80c's
