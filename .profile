@@ -29,7 +29,13 @@ elif [[ "$SHELL" == *bash ]]; then
   ## Bash settings
 
   ### stickier .bash_history
+  export SHELL_SESSION_HISTORY=0
+  export HISTCONTROL=ignoredups:erasedups
+  export HISTSIZE=100000
+  export HISTFILESIZE=100000
   shopt -s histappend
+  PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
+
 
   ### Set up tab-completion (requires `brew install bash-completion`)
   if [ -f $(brew --prefix)/etc/bash_completion ]; then
