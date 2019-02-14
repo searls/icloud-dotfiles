@@ -41,7 +41,7 @@ fi
 for pkg in vim bash-completion git nodenv node-build rbenv ruby-build postgresql wget tree jid jq heroku fzf ripgrep; do
   if brew list -1 | grep -q "^${pkg}\$"; then
     echo "Package '$pkg' is installed; updating:"
-    brew upgrade "$pkg" --cleanup || true
+    brew upgrade "$pkg" && brew cleanup "$pkg" || true
   else
     brew install "$pkg"
   fi
