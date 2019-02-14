@@ -82,11 +82,11 @@ nnoremap <leader>dd :w!<CR>:Dispatch<CR>
 call DoubleMap("<C-A>", ":wa<CR>", 0)
 
 " use ctrl-1 to tab back
-call DoubleMap("<C-W>", ":tabprevious<CR>", 1)
+call DoubleMap("<C-W>", ":tabprevious<CR>", 0)
 " use ctrl-2 to tab ahead
-call DoubleMap("<C-E>", ":tabnext<CR>", 1)
+call DoubleMap("<C-E>", ":tabnext<CR>", 0)
 " use ctrl-q to quit
-" nnoremap <C-Q> :qa<CR>
+call DoubleMap("<C-D>", ":wq<CR>", 0)
 " use \qq to format the current paragraph/block to 80c's
 nnoremap <leader>qq gqap<CR>
 " use \cc to copy the current visual selection
