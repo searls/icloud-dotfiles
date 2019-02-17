@@ -38,6 +38,8 @@ else
 fi
 
 # Brew installations
+brew tap heroku/brew
+brew tap universal-ctags/universal-ctags
 for pkg in vim bash-completion git nodenv node-build rbenv ruby-build postgresql wget tree jid jq heroku fzf ripgrep; do
   if brew list -1 | grep -q "^${pkg}\$"; then
     echo "Package '$pkg' is installed; updating:"
@@ -54,7 +56,6 @@ if brew list -1 | grep -q "^universal-ctags\$"; then
   echo "Package 'universal-ctags' is installed; updating:"
   brew upgrade bash-completion --cleanup || true
 else
-  brew tap universal-ctags/universal-ctags
   brew install --HEAD universal-ctags
 fi
 
