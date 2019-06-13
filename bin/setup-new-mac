@@ -65,7 +65,7 @@ fi
 #sudo dscl . -create /Users/$USER UserShell /usr/local/bin/zsh
 
 ## Set up node
-NODE_VERSION="10.15.1"
+NODE_VERSION="12.4.0"
 if [ -d ".nodenv/versions/$NODE_VERSION" ]; then
   echo "Node $NODE_VERSION already installed"
 else
@@ -75,7 +75,7 @@ eval "$(nodenv init -)"
 nodenv global "$NODE_VERSION"
 
 ## Set up ruby
-RUBY_VERSION="2.6.1"
+RUBY_VERSION="2.6.3"
 if [ -d ".rbenv/versions/$RUBY_VERSION" ]; then
   echo "Ruby $RUBY_VERSION already installed"
 else
