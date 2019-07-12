@@ -1,35 +1,36 @@
 [push]
-	default = current
+  default = current
 [branch]
-	autosetuprebase = always
-	autosetupmerge = true
+  autosetuprebase = always
+  autosetupmerge = true
 [user]
-	name = Justin Searls
-	email = searls@gmail.com
+  name = Justin Searls
+  email = searls@gmail.com
 [core]
-	editor = vim
-	excludesfile = /Users/justin/.gitignore_global
-	mergetool = opendiff
-	autostash = true
+  editor = vim
+  autocrlf = input
+  excludesfile = /Users/justin/.gitignore_global
+  mergetool = opendiff
+  autostash = true
 [heroku]
-	account = personal
+  account = personal
 [merge]
-	tool = vimdiff
-	conflictstyle = diff3
+  tool = vimdiff
+  conflictstyle = diff3
 [diff]
-	renames = true
+  renames = true
 [help]
-	autocorrect = 1
+  autocorrect = 1
 [mergetool]
-	prompt = false
+  prompt = false
 [github]
-	user = searls
+  user = searls
 [credential]
-	helper = osxkeychain
+  helper = osxkeychain
 [rebase]
-	autostash = true
+  autostash = true
 [filter "lfs"]
-	required = true
-	clean = git-lfs clean -- %f
-	smudge = git-lfs smudge -- %f
-	process = git-lfs filter-process
+  required = true
+  clean = git-lfs clean -- %f
+  smudge = git-lfs smudge -- %f
+  process = git-lfs filter-process
