@@ -2,3 +2,5 @@
 /.vim/swapfiles
 /.vim/.netrwhist
 /.env
+/config/alfred
+/project-dotfiles/**/*
