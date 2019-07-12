@@ -1,0 +1,3 @@
+bind generic P !git push origin
+bind generic R !git pull --rebase
+
