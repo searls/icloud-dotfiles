@@ -61,3 +61,6 @@
 [submodule ".vim/bundle/vim-ale"]
 	path = .vim/bundle/vim-ale
 	url = https://github.com/w0rp/ale.git
+[submodule ".vim/bundle/vim-pencil"]
+	path = .vim/bundle/vim-pencil
+	url = https://github.com/reedes/vim-pencil
