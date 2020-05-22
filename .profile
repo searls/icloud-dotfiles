@@ -13,6 +13,11 @@ if command -v gel &>/dev/null; then
   eval "$(gel shell-setup)"
 fi
 
+
+# if command -v heroku &>/dev/null; then
+#   eval "$(heroku autocomplete:script bash)"
+# fi
+
 # Additional PATH configuration
 
 ## My own scripts
@@ -38,7 +43,7 @@ elif [[ "$SHELL" == *bash ]]; then
   export HISTSIZE=100000
   export HISTFILESIZE=100000
   shopt -s histappend
-  PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
+  # PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
 
 
   ### Set up tab-completion (requires `brew install bash-completion`)
@@ -72,6 +77,5 @@ alias gc="git commit"
 
 ## load custom PS1 prompt
 source $HOME/bin/ps1
-
 
 export PATH="$HOME/.cargo/bin:$PATH"
