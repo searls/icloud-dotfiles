@@ -10,6 +10,7 @@ set tags+=.git/tags
 set expandtab
 set shiftwidth=2
 set softtabstop=2
+set redrawtime=10000 " LOLLLLLLL large JS files
 
 set ruler
 set laststatus=2
@@ -25,6 +26,7 @@ set relativenumber
 set suffixesadd=.rb
 set path+=lib/**,test/**
 let g:ruby_path = &path
+let g:ruby_indent_assignment_style = 'variable'
 
 " from https://github.com/tpope/gem-ctags
 autocmd FileType ruby let &l:tags = pathogen#legacyjoin(pathogen#uniq(
@@ -51,7 +53,6 @@ let g:airline_theme='light'
 let g:ale_linters = { 'ruby': ['standardrb'], 'javascript': ['standard']  }
 let g:ale_fix_on_save = 1
 let g:ale_fixers = { 'ruby': ['standardrb'], 'javascript': ['standard'] }
-
 
 " Airline + Ale
 let g:airline#extensions#ale#enabled = 1
@@ -114,6 +115,9 @@ set complete+=kspell
 " project-specific but I use it a lot so here goes
 set makeprg=rake\ test
 compiler rake
+
+" vim-pencil, don't let it autoformat b/c it screws up headers
+let g:pencil#autoformat = 0
 
 " easier 80c's paragraph reformating with gq
 au BufRead,BufNewFile *.md setlocal textwidth=80
