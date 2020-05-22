@@ -15,6 +15,9 @@ for link in .gemrc .pryrc .gitconfig .gitignore_global .homebridge .inputrc .pro
   fi
 done
 
+# Shush MOTD
+touch "$HOME/.hushlogin"
+
 ## link .ssh config
 mkdir -p "$HOME/.ssh"
 cd "$HOME/.ssh"
@@ -34,13 +37,13 @@ if command -v brew; then
   echo "Homebrew installed; updating:"
   brew update
 else
-  /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 fi
 
 # Brew installations
 brew tap heroku/brew
 brew tap universal-ctags/universal-ctags
-for pkg in vim bash-completion git nodenv node-build rbenv ruby-build postgresql wget tree jid jq heroku yarn fzf ripgrep; do
+for pkg in vim bash bash-completion git nodenv node-build rbenv ruby-build postgresql wget tree jid jq heroku yarn fzf ripgrep; do
   if brew list -1 | grep -q "^${pkg}\$"; then
     echo "Package '$pkg' is installed; updating:"
     brew upgrade "$pkg" && brew cleanup "$pkg" || true
@@ -59,13 +62,17 @@ else
   brew install --HEAD universal-ctags
 fi
 
+# Switch to brew bash
+echo /usr/local/bin/bash | sudo tee -a /etc/shells
+chsh -s /usr/local/bin/bash
+
 ## Set shell to zsh
 
 # Disabled until I get around to configuring zsh
 #sudo dscl . -create /Users/$USER UserShell /usr/local/bin/zsh
 
 ## Set up node
-NODE_VERSION="12.4.0"
+NODE_VERSION="12.16.3"
 if [ -d ".nodenv/versions/$NODE_VERSION" ]; then
   echo "Node $NODE_VERSION already installed"
 else
@@ -75,7 +82,7 @@ eval "$(nodenv init -)"
 nodenv global "$NODE_VERSION"
 
 ## Set up ruby
-RUBY_VERSION="2.6.3"
+RUBY_VERSION="2.7.1"
 if [ -d ".rbenv/versions/$RUBY_VERSION" ]; then
   echo "Ruby $RUBY_VERSION already installed"
 else
