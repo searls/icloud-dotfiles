@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+
+ruby -rpp -rripper -e"pp Ripper.sexp(\"$@\")"

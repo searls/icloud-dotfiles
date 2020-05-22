@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -e
+
+git pull origin master
+git submodule foreach --recursive git pull origin master

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+diskutil eject /dev/disk3
+SafeEjectGPU Eject
