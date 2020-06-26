@@ -43,7 +43,7 @@ fi
 # Brew installations
 brew tap heroku/brew
 brew tap universal-ctags/universal-ctags
-for pkg in vim bash bash-completion git nodenv node-build rbenv ruby-build postgresql wget tree jid jq heroku yarn fzf ripgrep; do
+for pkg in vim bash bash-completion git git-lfs nodenv node-build rbenv ruby-build postgresql wget tree jid jq netlify-cli heroku hugo yarn fzf ripgrep; do
   if brew list -1 | grep -q "^${pkg}\$"; then
     echo "Package '$pkg' is installed; updating:"
     brew upgrade "$pkg" && brew cleanup "$pkg" || true
@@ -51,6 +51,11 @@ for pkg in vim bash bash-completion git nodenv node-build rbenv ruby-build postg
     brew install "$pkg"
   fi
 done
+
+# Disable netlify tracking
+netlify --telemetry-disable
+netlify plugins:install netlify-lm-plugin
+netlify lm:install
 
 # Start postgres
 brew services start postgres

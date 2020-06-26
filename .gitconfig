@@ -4,8 +4,8 @@
   autosetuprebase = always
   autosetupmerge = true
 [user]
-  name = Justin Searls
-  email = searls@gmail.com
+	name = Justin Searls
+	email = searls@gmail.com
 [core]
   editor = vim
   autocrlf = input
@@ -34,3 +34,9 @@
   clean = git-lfs clean -- %f
   smudge = git-lfs smudge -- %f
   process = git-lfs filter-process
+
+# This next lines include Netlify's Git Credential Helper configuration in your Git configuration.
+[include]
+  path = /Users/justin/.netlify/helper/git-config
+[rerere]
+	enabled = true

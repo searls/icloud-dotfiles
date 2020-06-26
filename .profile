@@ -13,6 +13,11 @@ if command -v gel &>/dev/null; then
   eval "$(gel shell-setup)"
 fi
 
+if command -v netlify &>/dev/null; then
+  source "$HOME/.netlify/helper/path.bash.inc"
+fi
+
+
 
 # if command -v heroku &>/dev/null; then
 #   eval "$(heroku autocomplete:script bash)"

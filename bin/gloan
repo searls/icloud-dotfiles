@@ -26,7 +26,7 @@ mkdir -p "$ORG_DIR"
 if [ -d "$REPO_DIR" ]; then
   echo "It looks like the repo was already cloned."
 else
-  git clone "git@github.com:$ORG/$REPO.git" "$REPO_DIR"
+  git clone --recurse-submodules "git@github.com:$ORG/$REPO.git" "$REPO_DIR"
 fi
 
 echo "cd $HOME/code/$ORG/$REPO\n" | pbcopy
