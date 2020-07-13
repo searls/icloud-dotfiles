@@ -70,7 +70,7 @@ export ICLOUD_DRIVE="$HOME/icloud-drive"
 source "$ICLOUD_DRIVE/dotfiles/.env"
 
 ## Set fzf to use rg like so for ctrl-t in shell:
-export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow --glob "!.git/*"'
+export FZF_DEFAULT_COMMAND='rg --files --ignore --hidden --follow --glob "!.git/*"'
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
 
 ## Increase limit of open file descriptors because watch processes
