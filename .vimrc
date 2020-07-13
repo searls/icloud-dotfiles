@@ -49,6 +49,9 @@ set visualbell t_vb= " disable audible bell in terminal
 " Airline
 let g:airline_theme='light'
 
+" From: https://github.com/flazz/vim-colorschemes
+" colorscheme Light
+
 " Lint with ale + standardrb
 let g:ale_linters = { 'ruby': ['standardrb'], 'javascript': ['standard']  }
 let g:ale_fix_on_save = 1

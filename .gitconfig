@@ -1,15 +1,19 @@
 [push]
   default = current
+  followTags = true
+[pull]
+  rebase = merges
+  tags = true
 [branch]
   autosetuprebase = always
   autosetupmerge = true
 [user]
-	name = Justin Searls
-	email = searls@gmail.com
+  name = Justin Searls
+  email = searls@gmail.com
 [core]
   editor = vim
   autocrlf = input
-  excludesfile = /Users/justin/.gitignore_global
+  excludesfile = ~/.gitignore_global
   mergetool = opendiff
   autostash = true
 [heroku]
@@ -34,9 +38,10 @@
   clean = git-lfs clean -- %f
   smudge = git-lfs smudge -- %f
   process = git-lfs filter-process
+[rerere]
+  enabled = true
+  autoupdate = true
 
 # This next lines include Netlify's Git Credential Helper configuration in your Git configuration.
 [include]
-  path = /Users/justin/.netlify/helper/git-config
-[rerere]
-	enabled = true
+  path = ~/.netlify/helper/git-config
