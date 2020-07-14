@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+# Usage: eps2svg (in.eps) (out.svg)
+#
+# Requires:
+#   brew install ghostscript
+#   brew install pdf2svg
+
+in_path="$1"
+pdf_path="__eps2svg_tmp.pdf"
+out_path="$2"
+
+ps2pdf -dEPSCrop  "$in_path" "$pdf_path"
+pdf2svg "$pdf_path" "$out_path"
+rm "$pdf_path"
