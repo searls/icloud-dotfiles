@@ -174,3 +174,6 @@ function! AlignLine(line, sep, maxpos, extra)
   let spaces = repeat(' ', a:maxpos - strlen(m[1]) + a:extra)
   return m[1] . spaces . m[2]
 endfunction
+
+" Prevent dangerous commands from being run in project dotfiles
+set secure
