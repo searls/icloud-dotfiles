@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+# Just tack on what else you need, usually:
+# pg_restore_my_way -d db_name dump.file.lol
+
+pg_restore --verbose --clean --no-acl --no-owner -h localhost -U "$(whoami)" "$@"
+

@@ -53,6 +53,7 @@ let g:airline_theme='light'
 " colorscheme Light
 
 " Lint with ale + standardrb
+let g:ale_linters_explicit = 1
 let g:ale_linters = { 'ruby': ['standardrb'], 'javascript': ['standard']  }
 let g:ale_fix_on_save = 1
 let g:ale_fixers = { 'ruby': ['standardrb'], 'javascript': ['standard'] }
@@ -63,6 +64,9 @@ let g:airline#extensions#ale#enabled = 1
 
 " use ripgrep for grep
 set grepprg=rg\ --vimgrep
+
+" add fzf bindings
+set rtp+=/opt/homebrew/opt/fzf
 
 function DoubleMap(bind, command, return_to_insert)
   exec "nmap " . a:bind . " " . a:command
@@ -85,10 +89,11 @@ nnoremap <leader>dd :w!<CR>:Dispatch<CR>
 " use ctrl-a to save all and then be in normal mod
 call DoubleMap("<C-A>", ":wa<CR>", 0)
 
-" use ctrl-1 to tab back
-call DoubleMap("<C-W>", ":tabprevious<CR>", 0)
-" use ctrl-2 to tab ahead
-call DoubleMap("<C-E>", ":tabnext<CR>", 0)
+call DoubleMap("<Left>", ":tabprevious<CR>", 0)
+call DoubleMap("<Right>", ":tabnext<CR>", 0)
+" noremap <Up> :m--1 <CR>
+" noremap <Down> :m+1 <CR>
+
 " use ctrl-q to quit
 call DoubleMap("<C-D>", ":wq<CR>", 0)
 " use \qq to format the current paragraph/block to 80c's
@@ -101,6 +106,8 @@ nnoremap <leader>cc :call system('pbcopy', @0)<CR>
 nnoremap <leader>ii :copen<CR>
 " close quickfix with \oo
 nnoremap <leader>oo :cclose<CR>
+" type cp in normal mode to copy the current relative file path
+nmap cp :let @+ = expand("%")<CR>
 " close quickfix with \pry
 nnoremap <leader>pry irequire "pry"; binding.pry
 
@@ -125,6 +132,7 @@ let g:pencil#autoformat = 0
 " easier 80c's paragraph reformating with gq
 au BufRead,BufNewFile *.md setlocal textwidth=80
 au BufNewFile,BufRead *.us setlocal ft=html
+set nojoinspaces "<- 1 space after periods
 
 " easier split navigation with C-JKLH instead of hitting C-W first
 set splitbelow

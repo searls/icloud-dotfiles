@@ -7,7 +7,7 @@ cd "$HOME"
 [ ! -L icloud-drive ] && ln -s "$HOME/Library/Mobile Documents/com~apple~CloudDocs" icloud-drive
 [ ! -L lolbrary ] && ln -s "$HOME/Library" lolbrary
 
-for link in .gemrc .pryrc .gitconfig .gitignore_global .homebridge .inputrc .profile .bashrc .vim .vimrc bin .vscode .zprofile .zshenv .zshrc .fzf.zsh .fzf.bash .tmux.conf; do
+for link in .gemrc .pryrc .gitconfig .gitignore_global .inputrc .profile .bashrc .vim .vimrc bin .vscode .fzf.bash .tmux.conf; do
   if [ -L "$HOME/$link" ]; then
     echo "Link '$link' already exists"
   else
@@ -17,6 +17,9 @@ done
 
 # Shush MOTD
 touch "$HOME/.hushlogin"
+
+# Prevent macOS from restoring terminal
+touch "$HOME/.bash_sessions_disable"
 
 ## link .ssh config
 mkdir -p "$HOME/.ssh"
@@ -37,13 +40,14 @@ if command -v brew; then
   echo "Homebrew installed; updating:"
   brew update
 else
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  eval $(/opt/homebrew/bin/brew shellenv)
 fi
 
 # Brew installations
 brew tap heroku/brew
 brew tap universal-ctags/universal-ctags
-for pkg in vim bash bash-completion git git-lfs nodenv node-build rbenv ruby-build postgresql wget tree jid jq netlify-cli heroku hugo yarn fzf ripgrep; do
+for pkg in vim bash bash-completion git nodenv node-build rbenv ruby-build postgresql wget tree jq heroku hugo yarn fzf ripgrep; do
   if brew list -1 | grep -q "^${pkg}\$"; then
     echo "Package '$pkg' is installed; updating:"
     brew upgrade "$pkg" && brew cleanup "$pkg" || true
@@ -52,32 +56,23 @@ for pkg in vim bash bash-completion git git-lfs nodenv node-build rbenv ruby-bui
   fi
 done
 
-# Disable netlify tracking
-netlify --telemetry-disable
-netlify plugins:install netlify-lm-plugin
-netlify lm:install
-
 # Start postgres
 brew services start postgres
+createdb "$(whoami)"
 
 if brew list -1 | grep -q "^universal-ctags\$"; then
   echo "Package 'universal-ctags' is installed; updating:"
-  brew upgrade bash-completion --cleanup || true
+  brew upgrade bash-completion || true
 else
   brew install --HEAD universal-ctags
 fi
 
 # Switch to brew bash
-echo /usr/local/bin/bash | sudo tee -a /etc/shells
-chsh -s /usr/local/bin/bash
-
-## Set shell to zsh
-
-# Disabled until I get around to configuring zsh
-#sudo dscl . -create /Users/$USER UserShell /usr/local/bin/zsh
+echo /opt/homebrew/bin/bash | sudo tee -a /etc/shells
+chsh -s /opt/homebrew/bin/bash
 
 ## Set up node
-NODE_VERSION="12.16.3"
+NODE_VERSION="14.16.0"
 if [ -d ".nodenv/versions/$NODE_VERSION" ]; then
   echo "Node $NODE_VERSION already installed"
 else
@@ -87,7 +82,7 @@ eval "$(nodenv init -)"
 nodenv global "$NODE_VERSION"
 
 ## Set up ruby
-RUBY_VERSION="2.7.1"
+RUBY_VERSION="3.0.0"
 if [ -d ".rbenv/versions/$RUBY_VERSION" ]; then
   echo "Ruby $RUBY_VERSION already installed"
 else

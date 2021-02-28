@@ -1,3 +1,6 @@
+# Initialize homebrew
+eval $(/opt/homebrew/bin/brew shellenv)
+
 # Initialize my "xenv" language runtime managers if installed
 if command -v rbenv &>/dev/null; then
   eval "$(rbenv init -)"
@@ -13,26 +16,10 @@ if command -v gel &>/dev/null; then
   eval "$(gel shell-setup)"
 fi
 
-if command -v netlify &>/dev/null; then
-  source "$HOME/.netlify/helper/path.bash.inc"
-fi
-
-
-
-# if command -v heroku &>/dev/null; then
-#   eval "$(heroku autocomplete:script bash)"
-# fi
-
 # Additional PATH configuration
 
 ## My own scripts
 export PATH="$HOME/bin:$PATH"
-
-## Ruby binstubs (note: this can be exploited at untrusted working directories!)
-export PATH="$PATH:./bin"
-
-## homebrew sbin
-export PATH="/usr/local/sbin:$PATH"
 
 # Shell-specific settings
 
@@ -43,15 +30,12 @@ elif [[ "$SHELL" == *bash ]]; then
   ## Bash settings
 
   ### stickier .bash_history
-  export SHELL_SESSION_HISTORY=0
   export HISTCONTROL=ignoredups:erasedups
-  export HISTSIZE=100000
-  export HISTFILESIZE=100000
+  export HISTSIZE=10000
+  export HISTFILESIZE=10000
   shopt -s histappend
-  # PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
 
-
-  ### Set up tab-completion (requires `brew install bash-completion`)
+  ### Set up homebrew
   if [ -f $(brew --prefix)/etc/bash_completion ]; then
     source $(brew --prefix)/etc/bash_completion
   fi
@@ -76,11 +60,6 @@ export FZF_DEFAULT_COMMAND='rg --files --ignore --hidden --follow --glob "!.git/
 ## Increase limit of open file descriptors because watch processes
 ulimit -n 10000
 
-## Set a few aliases
-alias be="bundle exec"
-alias gc="git commit"
-
 ## load custom PS1 prompt
 source $HOME/bin/ps1
 
-export PATH="$HOME/.cargo/bin:$PATH"

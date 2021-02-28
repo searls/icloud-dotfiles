@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+backup_path=$1
+db_name=$2
+
+dropdb "$db_name"
+createdb "$db_name"
+pg_restore --no-privileges --no-owner --dbname "$db_name" "$backup_path"

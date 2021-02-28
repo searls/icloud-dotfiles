@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+command="$1"
+
+if [ -f "bin/$1" ]; then
+  echo uhoh
+  "bin/$@"
+else
+  bundle exec "$@"
+fi
