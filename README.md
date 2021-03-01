@@ -9,6 +9,8 @@ The basic gist of this:
 2. Have a script that symlinks iCloud drive & dotfiles to my home directory and
     installs (or updates) the programs I use, such that it can be re-run gracefully
 
+Here's my [full routine for setting up a new Mac on YouTube](https://blog.testdouble.com/talks/2020-05-28-setting-up-a-new-mac-for-development/)
+
 ## Setup
 
 ### 1. Fetch the dotfiles and throw them in iCloud Drive
