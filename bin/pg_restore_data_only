@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+# Usage:
+#
+#   $ pg_restore_data_only my_db my.dump
+#
+# Warning: this is going to nuke all your data fyi nbd
+
+set -e
+
+db_name="$1"
+backup_path="$2"
+
+# Ad hoc loop to truncate every table in the database
+psql -d "$db_name" -c "DO \$do$ BEGIN execute (SELECT 'TRUNCATE TABLE ' || string_agg(format('%I.%I', schemaname, tablename), ', ') || ' CASCADE' FROM pg_tables WHERE  tableowner = '$(whoami)' AND schemaname = 'public'); END \$do$"
+
+pg_restore --data-only --disable-triggers --no-privileges --verbose --no-acl --no-owner -h localhost -U "$(whoami)" -d "$db_name" "$backup_path"
