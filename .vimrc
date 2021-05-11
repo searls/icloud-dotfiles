@@ -2,6 +2,20 @@ execute pathogen#infect()
 syntax on
 filetype plugin indent on
 
+" I like to live dangerously
+set noswapfile
+
+" But not that dangerously
+if !isdirectory($HOME."/.vim")
+    call mkdir($HOME."/.vim", "", 0770)
+endif
+if !isdirectory($HOME."/.vim/undo-dir")
+    call mkdir($HOME."/.vim/undo-dir", "", 0700)
+endif
+set undodir=~/.vim/undo-dir
+set undofile
+
+
 " type \rt to recreate ctags (typically after adding a file/type/method)
 map <Leader>rt :!ctags --tag-relative=yes --extras=+f -Rf.git/tags --exclude=.git --exclude=pkg --exclude=node_modules --languages=-sql<CR><CR>
 "" store ctags inside untracked git folder
@@ -27,6 +41,7 @@ set suffixesadd=.rb
 set path+=lib/**,test/**
 let g:ruby_path = &path
 let g:ruby_indent_assignment_style = 'variable'
+let g:ruby_indent_hanging_elements = 0
 
 " from https://github.com/tpope/gem-ctags
 autocmd FileType ruby let &l:tags = pathogen#legacyjoin(pathogen#uniq(

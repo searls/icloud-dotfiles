@@ -1,5 +1,6 @@
 /.homebridge/persist
 /.vim/swapfiles
+/.vim/undo-dir
 /.vim/.netrwhist
 /.env
 /config/alfred
