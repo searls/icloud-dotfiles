@@ -73,3 +73,6 @@
 [submodule ".vim/bundle/vim-vue"]
 	path = .vim/bundle/vim-vue
 	url = https://github.com/posva/vim-vue.git
+[submodule ".vim/bundle/vim-ruby-heredoc-syntax"]
+	path = .vim/bundle/vim-ruby-heredoc-syntax
+	url = git@github.com:joker1007/vim-ruby-heredoc-syntax.git
