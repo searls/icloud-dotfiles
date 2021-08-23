@@ -8,8 +8,8 @@
   autosetuprebase = always
   autosetupmerge = true
 [user]
-	name = Justin Searls
-	email = searls@gmail.com
+  name = Justin Searls
+  email = searls@gmail.com
 [core]
   editor = vim
   autocrlf = input
@@ -36,18 +36,16 @@
 [rerere]
   enabled = true
   autoupdate = true
+[init]
+	defaultBranch = main
+[alias]
+  force = push --force-with-lease
+	recent = branch --sort=-committerdate --format=\"%(committerdate:relative)%09%(refname:short)\"
 
-# This next lines include Netlify's Git Credential Helper configuration in your Git configuration.
-[include]
-  path = ~/.netlify/helper/git-config
-
-# This next lines include Netlify's Git Credential Helper configuration in your Git configuration.
-[include]
-  path = /Users/justin/.netlify/helper/git-config
+[advice]
+	detachedHead = false
 [filter "lfs"]
 	clean = git-lfs clean -- %f
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
 	required = true
-[init]
-	defaultBranch = master

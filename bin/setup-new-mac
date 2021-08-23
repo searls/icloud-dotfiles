@@ -72,7 +72,7 @@ echo /opt/homebrew/bin/bash | sudo tee -a /etc/shells
 chsh -s /opt/homebrew/bin/bash
 
 ## Set up node
-NODE_VERSION="14.16.0"
+NODE_VERSION="14.17.3"
 if [ -d ".nodenv/versions/$NODE_VERSION" ]; then
   echo "Node $NODE_VERSION already installed"
 else

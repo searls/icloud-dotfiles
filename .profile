@@ -9,7 +9,7 @@ if command -v nodenv &>/dev/null; then
   eval "$(nodenv init -)"
 fi
 if command -v pyenv &>/dev/null; then
-  eval "$(pyenv init -)"
+  eval "$(pyenv init --path)"
 fi
 
 if command -v gel &>/dev/null; then
