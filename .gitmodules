@@ -1,69 +1,69 @@
 [submodule ".vim/bundle/mustache"]
 	path = .vim/bundle/mustache
-	url = git://github.com/mustache/vim-mustache-handlebars.git
+	url = git@github.com:mustache/vim-mustache-handlebars.git
 [submodule ".vim/bundle/syntastic"]
 	path = .vim/bundle/syntastic
-	url = https://github.com/vim-syntastic/syntastic.git
+	url = git@github.com:vim-syntastic/syntastic.git
 [submodule ".vim/bundle/vim-javascript"]
 	path = .vim/bundle/vim-javascript
-	url = https://github.com/pangloss/vim-javascript.git
+	url = git@github.com:pangloss/vim-javascript.git
 [submodule ".vim/bundle/vim-abolish"]
 	path = .vim/bundle/vim-abolish
-	url = git://github.com/tpope/vim-abolish.git
+	url = git@github.com:tpope/vim-abolish.git
 [submodule ".vim/bundle/vim-airline"]
 	path = .vim/bundle/vim-airline
-	url = https://github.com/bling/vim-airline
+	url = git@github.com:bling/vim-airline
 [submodule ".vim/bundle/vim-airline-themes"]
 	path = .vim/bundle/vim-airline-themes
 	url = git@github.com:vim-airline/vim-airline-themes.git
 [submodule ".vim/bundle/vim-bundler"]
 	path = .vim/bundle/vim-bundler
-	url = git://github.com/tpope/vim-bundler.git
+	url = git@github.com:tpope/vim-bundler.git
 [submodule ".vim/bundle/vim-coffee-script"]
 	path = .vim/bundle/vim-coffee-script
-	url = https://github.com/kchmck/vim-coffee-script.git
+	url = git@github.com:kchmck/vim-coffee-script.git
 [submodule ".vim/bundle/vim-commentary"]
 	path = .vim/bundle/vim-commentary
-	url = git://github.com/tpope/vim-commentary.git
+	url = git@github.com:tpope/vim-commentary.git
 [submodule ".vim/bundle/vim-emoji"]
 	path = .vim/bundle/vim-emoji
 	url = git@github.com:junegunn/vim-emoji.git
 [submodule ".vim/bundle/vim-fugitive"]
 	path = .vim/bundle/vim-fugitive
-	url = git://github.com/tpope/vim-fugitive.git
+	url = git@github.com:tpope/vim-fugitive.git
 [submodule ".vim/bundle/vim-projectionist"]
 	path = .vim/bundle/vim-projectionist
-	url = git://github.com/tpope/vim-projectionist.git
+	url = git@github.com:tpope/vim-projectionist.git
 [submodule ".vim/bundle/vim-pug"]
 	path = .vim/bundle/vim-pug
-	url = git://github.com/digitaltoad/vim-pug.git
+	url = git@github.com:digitaltoad/vim-pug.git
 [submodule ".vim/bundle/vim-rails"]
 	path = .vim/bundle/vim-rails
-	url = git://github.com/tpope/vim-rails.git
+	url = git@github.com:tpope/vim-rails.git
 [submodule ".vim/bundle/vim-ruby"]
 	path = .vim/bundle/vim-ruby
-	url = git://github.com/vim-ruby/vim-ruby.git
+	url = git@github.com:vim-ruby/vim-ruby.git
 [submodule ".vim/bundle/vim-unimpaired"]
 	path = .vim/bundle/vim-unimpaired
-	url = git://github.com/tpope/vim-unimpaired.git
+	url = git@github.com:tpope/vim-unimpaired.git
 [submodule ".vim/bundle/fzf.vim"]
 	path = .vim/bundle/fzf.vim
-	url = https://github.com/junegunn/fzf.vim.git
+	url = git@github.com:junegunn/fzf.vim.git
 [submodule ".vim/bundle/vim-dispatch"]
 	path = .vim/bundle/vim-dispatch
-	url = git://github.com/tpope/vim-dispatch.git
+	url = git@github.com:tpope/vim-dispatch.git
 [submodule ".vim/bundle/vim-slim"]
 	path = .vim/bundle/vim-slim
-	url = git://github.com/slim-template/vim-slim.git
+	url = git@github.com:slim-template/vim-slim.git
 [submodule ".vim/bundle/typescript-vim"]
 	path = .vim/bundle/typescript-vim
-	url = https://github.com/leafgarland/typescript-vim.git
+	url = git@github.com:leafgarland/typescript-vim.git
 [submodule ".vim/bundle/vim-ale"]
 	path = .vim/bundle/vim-ale
-	url = https://github.com/w0rp/ale.git
+	url = git@github.com:w0rp/ale.git
 [submodule ".vim/bundle/vim-pencil"]
 	path = .vim/bundle/vim-pencil
-	url = https://github.com/reedes/vim-pencil
+	url = git@github.com:reedes/vim-pencil
 [submodule ".vim/bundle/vim-markdown"]
 	path = .vim/bundle/vim-markdown
 	url = git@github.com:tpope/vim-markdown.git
@@ -72,7 +72,7 @@
 	url = git@github.com:tpope/vim-eunuch.git
 [submodule ".vim/bundle/vim-vue"]
 	path = .vim/bundle/vim-vue
-	url = https://github.com/posva/vim-vue.git
+	url = git@github.com:posva/vim-vue.git
 [submodule ".vim/bundle/vim-ruby-heredoc-syntax"]
 	path = .vim/bundle/vim-ruby-heredoc-syntax
 	url = git@github.com:joker1007/vim-ruby-heredoc-syntax.git

@@ -47,7 +47,7 @@ fi
 # Brew installations
 brew tap heroku/brew
 brew tap universal-ctags/universal-ctags
-for pkg in vim bash bash-completion git nodenv node-build rbenv ruby-build postgresql wget tree jq heroku hugo yarn fzf ripgrep; do
+for pkg in vim bash bash-completion git gh nodenv node-build rbenv ruby-build postgresql wget tree jq heroku hugo yarn fzf ripgrep; do
   if brew list -1 | grep -q "^${pkg}\$"; then
     echo "Package '$pkg' is installed; updating:"
     brew upgrade "$pkg" && brew cleanup "$pkg" || true
@@ -72,7 +72,7 @@ echo /opt/homebrew/bin/bash | sudo tee -a /etc/shells
 chsh -s /opt/homebrew/bin/bash
 
 ## Set up node
-NODE_VERSION="14.17.3"
+NODE_VERSION="16.14.2"
 if [ -d ".nodenv/versions/$NODE_VERSION" ]; then
   echo "Node $NODE_VERSION already installed"
 else
@@ -82,7 +82,7 @@ eval "$(nodenv init -)"
 nodenv global "$NODE_VERSION"
 
 ## Set up ruby
-RUBY_VERSION="3.0.0"
+RUBY_VERSION="3.1.1"
 if [ -d ".rbenv/versions/$RUBY_VERSION" ]; then
   echo "Ruby $RUBY_VERSION already installed"
 else
