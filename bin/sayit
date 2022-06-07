@@ -1,0 +1,28 @@
+#!/usr/bin/env ruby
+
+#
+# $ sayit abc1239
+#
+
+# frozen_string_literal: true
+
+TO_WORD = {
+  a: 'alpha', b: 'bravo', c: 'charlie', d: 'delta', e: 'echo',
+  f: 'foxtrot', g: 'golf', h: 'hotel', i: 'india', j: 'juliet',
+  k: 'kilo', l: 'lima', m: 'mike', n: 'november', o: 'oscar',
+  p: 'papa', q: 'quebec', r: 'romeo', s: 'sierra', t: 'tango',
+  u: 'uniform', v: 'victor', w: 'whiskey', x: 'x-ray', y: 'yankee',
+  z: 'zulu',
+  '0': 'zero', '1': 'one', '2': 'two', '3': 'tree', '4': 'fower', '5': 'fife',
+  '6': 'six', '7': 'seven', '8': 'eight', '9': 'niner'
+}.freeze
+
+def to_word(letter)
+  TO_WORD[letter.downcase.to_sym]
+end
+
+unless ARGV.length.zero?
+  puts ARGV[0].split('').inject('') { |result, letter|
+    "#{result} #{to_word(letter)}"
+  }.strip
+end
