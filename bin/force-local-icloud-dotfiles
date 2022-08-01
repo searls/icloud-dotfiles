@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+dir="${1:-$HOME/icloud-drive/dotfiles}"
+cd "$dir"
+
+# Trigger download recursively
+find . -type f -name "*.icloud" -exec brctl download {} \;
