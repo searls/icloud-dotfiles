@@ -1,10 +1,6 @@
 # Initialize homebrew
 eval $(/opt/homebrew/bin/brew shellenv)
 
-# Force iCloud Drive to download any dotfiles that have been evicted by the
-# "Optimize Storage" option being enabled
-force-local-icloud-dotfiles
-
 # Initialize my "xenv" language runtime managers if installed
 if command -v rbenv &>/dev/null; then
   eval "$(rbenv init -)"
@@ -24,6 +20,10 @@ fi
 
 ## My own scripts
 export PATH="$HOME/bin:$PATH"
+
+# Force iCloud Drive to download any dotfiles that have been evicted by the
+# "Optimize Storage" option being enabled
+force-local-icloud-dotfiles
 
 # Shell-specific settings
 
