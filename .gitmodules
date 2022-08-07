@@ -76,3 +76,6 @@
 [submodule ".vim/bundle/vim-ruby-heredoc-syntax"]
 	path = .vim/bundle/vim-ruby-heredoc-syntax
 	url = git@github.com:joker1007/vim-ruby-heredoc-syntax.git
+[submodule ".vim/bundle/nvim-treesitter"]
+	path = .vim/bundle/nvim-treesitter
+	url = git@github.com:nvim-treesitter/nvim-treesitter.git
