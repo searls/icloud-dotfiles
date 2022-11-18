@@ -7,3 +7,6 @@ npm-debug.log
 .projections.json
 .ruby-version
 .node-version
+.solargraph.yml
+.solargraph_definitions.rb
+/TAGS
