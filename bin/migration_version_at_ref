@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+# Useful when you want to git bisect in a rails app and know
+# you need to `bin/rake db:migrate VERSION="SOMETHING"` before
+# you check out the next commit so the database is in the right
+# state, but you don't know what SOMETHING is.
+
+# Usage:
+#
+# $ migration_version_at_ref <REF>
+
+ref="$1"
+
+git ls-tree --name-only "$1:db/migrate" | tail -n 1 | cut -f 1 -d '_'

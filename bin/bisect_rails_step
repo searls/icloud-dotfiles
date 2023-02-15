@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+# Usage:
+#
+#   First, be sure you're running `git bisect start --no-checkout`, so you can
+#   checkout the bisect head yourself and do some pre-flight stuff like rewind
+#   migrations
+#
+#   $ git bisect good
+#   Bisecting: 22 revisions left to test after this (roughly 5 steps)
+#   [8d85ccd2ce0fdbe3a1c3408f667b1cf15759c162] UI and validation tweaks
+#
+#   $ rails_bisect_step
+
+ref="${1:-BISECT_HEAD}"
+
+# pre-checkout
+bin/rake db:migrate VERSION="$(migration_version_at_ref $ref)" 2>/dev/null || echo "No such migration"
+git reset --hard
+
+git checkout "$ref"
+
+# post-checkout:
+bin/rake db:migrate
+
+
