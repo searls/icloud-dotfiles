@@ -7,7 +7,7 @@ cd "$HOME"
 [ ! -L icloud-drive ] && ln -s "$HOME/Library/Mobile Documents/com~apple~CloudDocs" icloud-drive
 [ ! -L lolbrary ] && ln -s "$HOME/Library" lolbrary
 
-for link in .config .gemrc .pryrc .gitconfig .gitignore_global .inputrc .profile .bashrc .vim .vimrc bin .fzf.bash .tmux.conf; do
+for link in .config .gemrc .pryrc .gitconfig .gitignore_global .inputrc .profile .bashrc .vim .vimrc bin .fzf.bash .tmux.conf .mackup.cfg; do
   if [ -L "$HOME/$link" ]; then
     echo "Link '$link' already exists"
   else
@@ -49,7 +49,7 @@ fi
 # Brew installations
 brew tap heroku/brew
 brew tap universal-ctags/universal-ctags
-for pkg in vim bash bash-completion git gh nodenv node-build rbenv ruby-build postgresql wget tree jq heroku hugo yarn fzf ripgrep; do
+for pkg in vim bash bash-completion git gh nodenv node-build rbenv ruby-build postgresql wget tree jq heroku hugo yarn fzf ripgrep mackup; do
   if brew list -1 | grep -q "^${pkg}\$"; then
     echo "Package '$pkg' is installed; updating:"
     brew upgrade "$pkg" && brew cleanup "$pkg" || true
@@ -97,3 +97,6 @@ gem install bundler
 # Run profile
 source .profile
 
+# Restore application settings backed up by mackup in icloud-drive/dotfiles/mackup
+# See: https://github.com/lra/mackup
+mackup -v restore

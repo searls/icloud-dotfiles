@@ -5,3 +5,7 @@
 /.env
 /config/alfred
 /project-dotfiles/**/*
+/.config/raycast
+/.config/configstore
+/bin/yt-dlp
+/config/mackup
