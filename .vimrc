@@ -17,9 +17,10 @@ set undofile
 
 
 " type \rt to recreate ctags (typically after adding a file/type/method)
-map <Leader>rt :!ctags --tag-relative=yes --extras=+f -Rf.git/tags --exclude=.git --exclude=pkg --exclude=node_modules --languages=-sql<CR><CR>
+" disabling in favor of binding \rt to ripper-tags in vscode (which shares this config file oops oh well)
+"map <Leader>rt :!ctags --tag-relative=yes --extras=+f -Rf.git/tags --exclude=.git --exclude=pkg --exclude=node_modules --languages=-sql<CR><CR>
 "" store ctags inside untracked git folder
-set tags+=.git/tags
+" set tags+=.git/tags
 
 set expandtab
 set shiftwidth=2
@@ -124,7 +125,7 @@ nnoremap <leader>oo :cclose<CR>
 " type cp in normal mode to copy the current relative file path
 nmap cp :let @+ = expand("%")<CR>
 " close quickfix with \pry
-nnoremap <leader>pry irequire "pry"; binding.pry
+nnoremap <leader>pry ibinding.irb
 
 " add a Find command using ripgrep
 command! -bang -nargs=* Find call fzf#vim#grep('rg --column --line-number --no-heading --fixed-strings --ignore-case --follow --glob "!.git/*" --color "always" '.shellescape(<q-args>), 1, <bang>0)
