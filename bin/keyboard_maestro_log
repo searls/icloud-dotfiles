@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+tail -f ~/Library/Logs/Keyboard\ Maestro/Engine.log

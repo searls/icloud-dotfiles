@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+set -e
+
+rsync --archive --delete --compress --progress --partial --update --human-readable --exclude=".DS_Store"  --exclude="@eaDir/" --exclude="#recycle/" "$@" "/Volumes/stuff/media/" searls@nas:/volume1/media

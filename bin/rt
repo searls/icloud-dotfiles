@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+if (bundle list | grep rails >/dev/null 2>&1); then
+  bundle exec rails test "$@"
+else
+  bundle exec m "$@"
+fi

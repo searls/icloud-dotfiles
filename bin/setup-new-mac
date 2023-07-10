@@ -7,7 +7,7 @@ cd "$HOME"
 [ ! -L icloud-drive ] && ln -s "$HOME/Library/Mobile Documents/com~apple~CloudDocs" icloud-drive
 [ ! -L lolbrary ] && ln -s "$HOME/Library" lolbrary
 
-for link in .config .gemrc .pryrc .gitconfig .gitignore_global .inputrc .profile .bashrc .vim .vimrc bin .fzf.bash .tmux.conf .mackup.cfg; do
+for link in .config .gemrc .gitconfig .gitignore_global .inputrc .profile .bashrc .vim .vimrc bin .fzf.bash .tmux.conf; do
   if [ -L "$HOME/$link" ]; then
     echo "Link '$link' already exists"
   else
@@ -36,6 +36,7 @@ defaults write com.apple.Safari WebKitMediaPlaybackAllowsInline -bool false
 defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2AllowsInlineMediaPlayback -bool false
 ## Allow pressing and holding a key to repeat it in VS Code - https://stackoverflow.com/questions/39972335/how-do-i-press-and-hold-a-key-and-have-it-repeat-in-vscode
 defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false
+defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false
 
 # Install things
 if command -v brew; then
@@ -49,7 +50,7 @@ fi
 # Brew installations
 brew tap heroku/brew
 brew tap universal-ctags/universal-ctags
-for pkg in vim bash bash-completion git gh nodenv node-build rbenv ruby-build postgresql wget tree jq heroku hugo yarn fzf ripgrep mackup; do
+for pkg in vim bash bash-completion git gh nodenv node-build rbenv ruby-build postgresql@15 wget tree jq heroku hugo yarn fzf ripgrep watchman; do
   if brew list -1 | grep -q "^${pkg}\$"; then
     echo "Package '$pkg' is installed; updating:"
     brew upgrade "$pkg" && brew cleanup "$pkg" || true
@@ -58,9 +59,17 @@ for pkg in vim bash bash-completion git gh nodenv node-build rbenv ruby-build po
   fi
 done
 
+# Switch to brew bash
+echo /opt/homebrew/bin/bash | sudo tee -a /etc/shells
+chsh -s /opt/homebrew/bin/bash
+
 # Start postgres
-brew services start postgres
-createdb "$(whoami)"
+brew services start postgresql@15
+if psql -lqt | cut -d \| -f 1 | grep -qw "$(whoami)"; then
+  echo "Default postgres database already exists"
+else
+  createdb "$(whoami)"
+fi
 
 if brew list -1 | grep -q "^universal-ctags\$"; then
   echo "Package 'universal-ctags' is installed; updating:"
@@ -69,12 +78,8 @@ else
   brew install --HEAD universal-ctags
 fi
 
-# Switch to brew bash
-echo /opt/homebrew/bin/bash | sudo tee -a /etc/shells
-chsh -s /opt/homebrew/bin/bash
-
 ## Set up node
-NODE_VERSION="16.14.2"
+NODE_VERSION="18.16.0"
 if [ -d ".nodenv/versions/$NODE_VERSION" ]; then
   echo "Node $NODE_VERSION already installed"
 else
@@ -84,7 +89,7 @@ eval "$(nodenv init -)"
 nodenv global "$NODE_VERSION"
 
 ## Set up ruby
-RUBY_VERSION="3.1.1"
+RUBY_VERSION="3.2.2"
 if [ -d ".rbenv/versions/$RUBY_VERSION" ]; then
   echo "Ruby $RUBY_VERSION already installed"
 else
@@ -92,11 +97,8 @@ else
 fi
 eval "$(rbenv init -)"
 rbenv global "$RUBY_VERSION"
+gem update --system
 gem install bundler
 
 # Run profile
 source .profile
-
-# Restore application settings backed up by mackup in icloud-drive/dotfiles/mackup
-# See: https://github.com/lra/mackup
-mackup -v restore

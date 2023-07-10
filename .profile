@@ -16,10 +16,17 @@ if command -v gel &>/dev/null; then
   eval "$(gel shell-setup)"
 fi
 
+if command -v github-copilot-cli &>/dev/null; then
+  eval "$(github-copilot-cli alias -- "$0")"
+fi
+
 # Additional PATH configuration
 
-## My own scripts
+## My own scripts - take priority
 export PATH="$HOME/bin:$PATH"
+
+## My GPT scripts - not priority
+export PATH="$PATH:$HOME/code/searls/gpt_scripts/script"
 
 # Force iCloud Drive to download any dotfiles that have been evicted by the
 # "Optimize Storage" option being enabled
@@ -34,10 +41,13 @@ elif [[ "$SHELL" == *bash ]]; then
   ## Bash settings
 
   ### stickier .bash_history
-  export HISTCONTROL=ignoredups:erasedups
-  export HISTSIZE=10000
-  export HISTFILESIZE=10000
-  shopt -s histappend
+  export HISTCONTROL=ignoredups:erasedups  # no duplicate entries
+  export HISTSIZE=100000                   # big big history
+  export HISTFILESIZE=100000               # big big history
+  shopt -s histappend                      # append to history, don't overwrite it
+
+  # Save and reload the history after each command finishes
+  # export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
 
   ### Set up homebrew
   if [ -f $(brew --prefix)/etc/bash_completion ]; then
@@ -67,3 +77,12 @@ ulimit -n 10000
 ## load custom PS1 prompt
 source $HOME/bin/ps1
 
+# update_terminal_cwd() {
+#     # Identify the directory using a "file:" scheme URL,
+#     # including the host name to disambiguate local vs.
+#     # remote connections. Percent-escape spaces.
+#     local SEARCH=' '
+#     local REPLACE='%20'
+#     local PWD_URL="file://$HOSTNAME${PWD//$SEARCH/$REPLACE}"
+#     printf '\e]7;%s\a' "$PWD_URL"
+# }
