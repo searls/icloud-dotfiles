@@ -30,7 +30,8 @@ export PATH="$PATH:$HOME/code/searls/gpt_scripts/script"
 
 # Force iCloud Drive to download any dotfiles that have been evicted by the
 # "Optimize Storage" option being enabled
-force-local-icloud-dotfiles
+# macOS 14.0 public beta 3 breaks this
+# force-local-icloud-dotfiles
 
 # Shell-specific settings
 

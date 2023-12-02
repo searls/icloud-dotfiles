@@ -37,6 +37,8 @@ defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebK
 ## Allow pressing and holding a key to repeat it in VS Code - https://stackoverflow.com/questions/39972335/how-do-i-press-and-hold-a-key-and-have-it-repeat-in-vscode
 defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false
 defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false
+## Avoid pressing and holding for diacritics globally
+defaults write -g ApplePressAndHoldEnabled -bool false
 
 # Install things
 if command -v brew; then

@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+
+begin
+  repo = `git remote -v`.split("\n").find { |line|
+    line.include?("github.com")
+  }.split("\t")[1].match(/git@github.com:(.*).git/)[1]
+
+  system "open https://github.com/#{repo}"
+rescue
+  warn "No github remote found"
+  exit 1
+end
