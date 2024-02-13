@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -e
+
+# Define your S3 bucket name and local directory path
+CLI_PROFILE="grog"
+BUCKET_NAME="grog-us-east-1"
+LOCAL_DIRECTORY="${1:-/Volumes/stuff/backups/grog}"
+
+echo "Syncing S3 bucket $BUCKET_NAME to $LOCAL_DIRECTORY/s3"
+mkdir -p "$LOCAL_DIRECTORY/s3"
+
+# Sync the S3 bucket to the local directory, deleting deleted records
+aws s3 sync s3://$BUCKET_NAME $LOCAL_DIRECTORY/s3 --profile "$CLI_PROFILE" --only-show-errors --delete
+
+echo "Syncing Postgres backups from S3 to $LOCAL_DIRECTORY/pg"
+mkdir -p "$LOCAL_DIRECTORY/pg"
+
+DATE=$(date +%Y-%m-%d)
+heroku pg:backups:capture
+heroku pg:backups:download -o "/Volumes/stuff/backups/grog/pg/${DATE}.dump"

@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Function to send email using 'mail' command
+send_failure_email() {
+  local command_name="$1"
+  BODY="Backup process for ${command_name} failed. Please check the logs for more information."
+  echo "$BODY" | shortcuts run "send_automated_email"
+}
+
+# Function to run a backup task, check for failure, and notify
+run_backup_task() {
+  local command_name="$1"
+  echo "----> Running backup task: $command_name"
+
+  # Execute the command
+  $command_name
+
+  # Check the exit status of the command
+  if [ $? -ne 0 ]; then
+    echo "----> ❌ ${command_name} failed."
+    send_failure_email "$command_name"
+  else
+    echo "----> ✅ ${command_name} succeeded."
+  fi
+
+}
+
+run_backup_task "backup_grog"
+run_backup_task "backup_to_ssd"
+
+echo "----> All backups completed."
