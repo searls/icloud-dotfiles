@@ -7,6 +7,7 @@ cd "$HOME"
 [ ! -L icloud-drive ] && ln -s "$HOME/Library/Mobile Documents/com~apple~CloudDocs" icloud-drive
 [ ! -L lolbrary ] && ln -s "$HOME/Library" lolbrary
 
+
 for link in .config .gemrc .gitconfig .gitignore_global .inputrc .profile .bashrc .vim .vimrc bin .fzf.bash .tmux.conf; do
   if [ -L "$HOME/$link" ]; then
     echo "Link '$link' already exists"
@@ -65,6 +66,8 @@ done
 echo /opt/homebrew/bin/bash | sudo tee -a /etc/shells
 chsh -s /opt/homebrew/bin/bash
 
+# As of 3/12/2024, postgresql@15 is keg-only, so add it to the path
+export PATH="/opt/homebrew/opt/postgresql@15/bin:$PATH"
 # Start postgres
 brew services start postgresql@15
 if psql -lqt | cut -d \| -f 1 | grep -qw "$(whoami)"; then
@@ -81,7 +84,7 @@ else
 fi
 
 ## Set up node
-NODE_VERSION="18.16.0"
+NODE_VERSION="20.11.1"
 if [ -d ".nodenv/versions/$NODE_VERSION" ]; then
   echo "Node $NODE_VERSION already installed"
 else
@@ -91,7 +94,7 @@ eval "$(nodenv init -)"
 nodenv global "$NODE_VERSION"
 
 ## Set up ruby
-RUBY_VERSION="3.2.2"
+RUBY_VERSION="3.3.0"
 if [ -d ".rbenv/versions/$RUBY_VERSION" ]; then
   echo "Ruby $RUBY_VERSION already installed"
 else
@@ -100,7 +103,10 @@ fi
 eval "$(rbenv init -)"
 rbenv global "$RUBY_VERSION"
 gem update --system
-gem install bundler
+gem install bundler htmlbeautifier ripper-tags
+
+# Copy launch agents for launch.d (symlinks not supported)
+cp $HOME/icloud-drive/dotfiles/launch-agents/* "$HOME/Library/LaunchAgents"
 
 # Run profile
 source .profile

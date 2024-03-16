@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-sudo rsync --archive --delete --compress --progress --partial --update --human-readable --exclude=".DS_Store" --exclude="node_modules/" /Users/justin/Documents /Volumes/stuff/backups/justin-documents
+rsync --archive --delete --compress --progress --partial --update --human-readable --exclude=".DS_Store" --exclude="node_modules/" /Users/justin/Documents /Volumes/stuff/backups/justin-documents

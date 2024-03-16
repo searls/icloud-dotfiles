@@ -12,18 +12,13 @@ if command -v pyenv &>/dev/null; then
   eval "$(pyenv init --path)"
 fi
 
-if command -v gel &>/dev/null; then
-  eval "$(gel shell-setup)"
-fi
-
-if command -v github-copilot-cli &>/dev/null; then
-  eval "$(github-copilot-cli alias -- "$0")"
-fi
-
 # Additional PATH configuration
 
 ## My own scripts - take priority
 export PATH="$HOME/bin:$PATH"
+
+# As of 3/12/2024, postgresql@15 is keg-only, so add it to the path
+export PATH="/opt/homebrew/opt/postgresql@15/bin:$PATH"
 
 ## My GPT scripts - not priority
 export PATH="$PATH:$HOME/code/searls/gpt_scripts/script"

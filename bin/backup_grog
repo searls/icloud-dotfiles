@@ -13,9 +13,9 @@ mkdir -p "$LOCAL_DIRECTORY/s3"
 # Sync the S3 bucket to the local directory, deleting deleted records
 aws s3 sync s3://$BUCKET_NAME $LOCAL_DIRECTORY/s3 --profile "$CLI_PROFILE" --only-show-errors --delete
 
-echo "Syncing Postgres backups from S3 to $LOCAL_DIRECTORY/pg"
+echo "Syncing Postgres backups from Heroku to $LOCAL_DIRECTORY/pg"
 mkdir -p "$LOCAL_DIRECTORY/pg"
 
 DATE=$(date +%Y-%m-%d)
-heroku pg:backups:capture
-heroku pg:backups:download -o "/Volumes/stuff/backups/grog/pg/${DATE}.dump"
+heroku pg:backups:capture -a grog
+heroku pg:backups:download -a grog -o "/Volumes/stuff/backups/grog/pg/${DATE}.dump"
