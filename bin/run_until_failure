@@ -1,0 +1,14 @@
+#!/bin/bash
+
+function run_until_failure {
+  while true; do
+    "$@"
+    if [ $? -ne 0 ]; then
+      echo "Command failed: $@"
+      break
+    fi
+  done
+}
+
+# Run the provided command
+run_until_failure "$@"

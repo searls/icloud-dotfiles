@@ -8,7 +8,7 @@ cd "$HOME"
 [ ! -L lolbrary ] && ln -s "$HOME/Library" lolbrary
 
 
-for link in .config .gemrc .gitconfig .gitignore_global .inputrc .profile .bashrc .vim .vimrc bin .fzf.bash .tmux.conf; do
+for link in .config .gemrc .gitconfig .gitignore_global .inputrc .profile .bashrc .vim .vimrc bin .fzf.bash .tmux.conf .netrc; do
   if [ -L "$HOME/$link" ]; then
     echo "Link '$link' already exists"
   else

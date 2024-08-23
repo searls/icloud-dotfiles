@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+set -e
+
+# Check for the minimum presence of one argument
+if [ $# -lt 1 ]; then
+    echo "Usage: $0 <input_path> [start_time] [stop_time]"
+    echo "Time format should be in seconds or HH:MM:SS (e.g., 00:00:10 for 10 seconds)"
+    exit 1
+fi
+
+INPUT_PATH="$1"
+# Define OUTPUT_PATH by replacing the extension of INPUT_PATH with .webp
+OUTPUT_PATH="${INPUT_PATH%.*}.webp"
+
+START_TIME_FLAG=""
+STOP_TIME_FLAG=""
+
+# Check if the start time is provided and set the flag
+if [ ! -z "$2" ]; then
+    START_TIME_FLAG="-ss \"$2\""
+fi
+
+# Check if the stop time is provided and set the flag
+if [ ! -z "$3" ]; then
+    STOP_TIME_FLAG="-to \"$3\""
+fi
+
+# Execute the ffmpeg command with conditionally included flags
+eval ffmpeg $START_TIME_FLAG $STOP_TIME_FLAG -i \"$INPUT_PATH\" -vf \"fps=15,scale=480:-1:flags=lanczos\" -quality 70 -c:v libwebp -preset default -loop 0 -an -fps_mode vfr \"$OUTPUT_PATH\"
+
