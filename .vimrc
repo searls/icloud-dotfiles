@@ -215,5 +215,15 @@ nnoremap <silent> <expr> 0 ScreenMovement("0")
 nnoremap <silent> <expr> ^ ScreenMovement("^")
 nnoremap <silent> <expr> $ ScreenMovement("$")
 
+" The above seems to not work in vscode so fuck it:
+nnoremap j gj
+nnoremap k gk
+vnoremap j gj
+vnoremap k gk
+nnoremap $ g$
+vnoremap $ g$
+nnoremap ^ g^
+vnoremap ^ g^
+
 " Prevent dangerous commands from being run in project dotfiles
 set secure

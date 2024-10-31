@@ -17,8 +17,8 @@ fi
 ## My own scripts - take priority
 export PATH="$HOME/bin:$PATH"
 
-# As of 3/12/2024, postgresql@15 is keg-only, so add it to the path
-export PATH="/opt/homebrew/opt/postgresql@15/bin:$PATH"
+# As of 3/12/2024, postgresql@16 is keg-only, so add it to the path
+export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"
 
 ## My GPT scripts - not priority
 export PATH="$PATH:$HOME/code/searls/gpt_scripts/script"

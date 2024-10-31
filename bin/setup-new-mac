@@ -33,8 +33,8 @@ cd ..
 ## Disabling shadows on windows when taking screenshots - requires killall SystemUIServer
 defaults write com.apple.screencapture disable-shadow -bool true
 ## allow disabling inline video in safari http://www.kirkville.com/stop-auto-play-videos-from-annoying-you-in-your-browser/
-defaults write com.apple.Safari WebKitMediaPlaybackAllowsInline -bool false
-defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2AllowsInlineMediaPlayback -bool false
+sudo defaults write com.apple.Safari WebKitMediaPlaybackAllowsInline -bool false
+sudo defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2AllowsInlineMediaPlayback -bool false
 ## Allow pressing and holding a key to repeat it in VS Code - https://stackoverflow.com/questions/39972335/how-do-i-press-and-hold-a-key-and-have-it-repeat-in-vscode
 defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false
 defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false
@@ -53,7 +53,7 @@ fi
 # Brew installations
 brew tap heroku/brew
 brew tap universal-ctags/universal-ctags
-for pkg in vim bash bash-completion@2 git gh nodenv node-build rbenv ruby-build postgresql@15 wget tree jq heroku hugo yarn fzf ripgrep watchman; do
+for pkg in vim bash bash-completion@2 git gh nodenv node-build rbenv ruby-build postgresql@16 wget tree jq heroku hugo yarn fzf ripgrep watchman; do
   if brew list -1 | grep -q "^${pkg}\$"; then
     echo "Package '$pkg' is installed; updating:"
     brew upgrade "$pkg" && brew cleanup "$pkg" || true
@@ -66,10 +66,10 @@ done
 echo /opt/homebrew/bin/bash | sudo tee -a /etc/shells
 chsh -s /opt/homebrew/bin/bash
 
-# As of 3/12/2024, postgresql@15 is keg-only, so add it to the path
-export PATH="/opt/homebrew/opt/postgresql@15/bin:$PATH"
+# As of 3/12/2024, postgresql@16 is keg-only, so add it to the path
+export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"
 # Start postgres
-brew services start postgresql@15
+brew services start postgresql@16
 if psql -lqt | cut -d \| -f 1 | grep -qw "$(whoami)"; then
   echo "Default postgres database already exists"
 else
@@ -84,7 +84,7 @@ else
 fi
 
 ## Set up node
-NODE_VERSION="20.11.1"
+NODE_VERSION="20.17.0"
 if [ -d ".nodenv/versions/$NODE_VERSION" ]; then
   echo "Node $NODE_VERSION already installed"
 else
@@ -94,7 +94,7 @@ eval "$(nodenv init -)"
 nodenv global "$NODE_VERSION"
 
 ## Set up ruby
-RUBY_VERSION="3.3.0"
+RUBY_VERSION="3.3.4"
 if [ -d ".rbenv/versions/$RUBY_VERSION" ]; then
   echo "Ruby $RUBY_VERSION already installed"
 else

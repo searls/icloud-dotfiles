@@ -5,6 +5,7 @@
 export HOME="/Users/justin"
 export PATH="$PATH:/usr/local/bin:/Library/Apple/usr/bin"
 source "$HOME/.profile"
+mkdir -p ~/tmp/backup-receipts
 
 # Define a function that prepends the current timestamp to messages
 function echo_with_timestamp() {
@@ -35,9 +36,11 @@ run_backup_task() {
 
   # Check the exit status of the command
   if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+    touch "$HOME/tmp/backup-receipts/$(date +%Y-%m-%d)-${command_name}-failed.txt"
     echo_with_timestamp "----> ❌ ${command_name} failed."
     send_failure_email "$command_name" "$log_file"
   else
+    touch "$HOME/tmp/backup-receipts/$(date +%Y-%m-%d)-${command_name}-succeeded.txt"
     echo_with_timestamp "----> ✅ ${command_name} succeeded."
   fi
 
@@ -46,6 +49,6 @@ run_backup_task() {
 
 run_backup_task "backup_grog"
 run_backup_task "backup_to_ssd"
+run_backup_task "backup_to_nas"
 
 echo_with_timestamp "----> All backups completed."
-
