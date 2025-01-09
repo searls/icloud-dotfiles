@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+set -e
+
+# Check if an input file is provided
+if [ -z "$1" ]; then
+  echo "Usage: $0 input_audio_file"
+  exit 1
+fi
+
+input_file="$1"
+base_name=$(basename "$input_file" | sed 's/\.[^.]*$//')
+
+# Convert input audio to 16kHz mono WAV and pipe to whisper-cpp
+ffmpeg -i "$input_file" -ar 16000 -ac 1 -f wav - | \
+  GGML_METAL_PATH_RESOURCES="$(brew --prefix whisper-cpp)/share/whisper-cpp" \
+  whisper-cpp --model ~/icloud-drive/dotfiles/models/whisper/ggml-large-v3-turbo-q8_0.bin \
+  --output-srt --language en --output-file "$base_name" -
+
+# Use supertitle to create a human-readable transcript
+command -v supertitle >/dev/null 2>&1 || gem install supertitle
+supertitle "$base_name.srt" srt "$base_name.txt" transcript

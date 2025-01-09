@@ -53,7 +53,7 @@ fi
 # Brew installations
 brew tap heroku/brew
 brew tap universal-ctags/universal-ctags
-for pkg in vim bash bash-completion@2 git gh nodenv node-build rbenv ruby-build postgresql@16 wget tree jq heroku hugo yarn fzf ripgrep watchman; do
+for pkg in vim bash bash-completion@2 git gh nodenv node-build rbenv ruby-build postgresql@16 wget tree jq heroku hugo yarn fzf ripgrep watchman whisper-cpp; do
   if brew list -1 | grep -q "^${pkg}\$"; then
     echo "Package '$pkg' is installed; updating:"
     brew upgrade "$pkg" && brew cleanup "$pkg" || true
