@@ -7,7 +7,8 @@ def link_and_possibly_recurse(project_dir, dotfiles_dir)
   dotfiles = Dir.glob("#{dotfiles_dir}/*", File::FNM_DOTMATCH)
   (dotfiles - ["#{dotfiles_dir}/.", "#{dotfiles_dir}/.."]).each do |file|
     link_dest = "#{project_dir}/#{File.basename(file)}"
-    if File.directory?(file) && File.exist?(link_dest)
+    if File.directory?(file) && File.exist?(link_dest) && !File.symlink?(link_dest)
+      # If the file is a directory, and that directory exists in the project, and that directory is not already one of these symlinks, recurse
       link_and_possibly_recurse(link_dest, file)
     elsif !File.exist?(link_dest)
       puts "Linking #{link_dest}"
