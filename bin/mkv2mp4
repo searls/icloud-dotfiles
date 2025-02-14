@@ -1,0 +1,46 @@
+#!/bin/bash
+
+usage() {
+  echo "Usage: $0 [--start|-s <timestamp>] [--end|-e <timestamp>] [--out|-o <outputfile>] <inputfile>"
+  exit 1
+}
+
+start=""
+end=""
+outfile=""
+inputfile=""
+
+while [[ "$#" -gt 0 ]]; do
+  case $1 in
+    --start|-s) start="$2"; shift 2;;
+    --end|-e) end="$2"; shift 2;;
+    --out|-o) outfile="$2"; shift 2;;
+    *)
+      if [ -z "$inputfile" ]; then
+        inputfile="$1"
+        shift
+      else
+        usage
+      fi
+      ;;
+  esac
+done
+
+[ -z "$inputfile" ] && usage
+
+if [ -z "$outfile" ]; then
+  outfile="${inputfile%.*}.mp4"
+fi
+
+if [[ "$inputfile" == "$outfile" ]]; then
+  echo "Error: Input file and output file must be different."
+  exit 1
+fi
+
+cmd=(ffmpeg)
+[ -n "$start" ] && cmd+=( -ss "$start" )
+[ -n "$end" ] && cmd+=( -to "$end" )
+cmd+=( -i "$inputfile" )
+cmd+=( -c:v copy -tag:v hvc1 -c:a copy -avoid_negative_ts make_zero -movflags faststart "$outfile" )
+
+"${cmd[@]}"
