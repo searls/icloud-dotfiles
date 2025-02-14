@@ -1,71 +1,103 @@
 #!/usr/bin/env ruby
 
-REEL_SPECIFICATIONS = {
-  min_frame_rate: 23,
-  max_frame_rate: 60,
-  container: ["mov", "mp4"],
-  audio_codec: "aac",
-  max_audio_sample_rate: 48,
-  video_codecs: ["h264", "hevc"],
-  color_space: "4:2:0",
-  horizontal_pixels: 1920,
-  min_aspect_ratio: 0.01,
-  max_aspect_ratio: 10.0,
-  max_video_bitrate_mbps: 25,
-  max_audio_bitrate_kbps: 128,
-  min_duration_seconds: 3,
-  max_duration_seconds: 900,
-  max_size_megabytes: 300
-}
-SPEC_COMMANDS = {
-  min_frame_rate: (fps = ->(path) { `ffprobe -v error -select_streams v:0 -show_entries stream=r_frame_rate -of default=noprint_wrappers=1:nokey=1 #{path}`[/\A\w+/].to_i }),
-  max_frame_rate: fps,
-  container: ->(path) { `ffprobe -v error -show_entries format=format_name -of default=noprint_wrappers=1:nokey=1 #{path}`.strip.split(",") },
-  audio_codec: ->(path) { `ffprobe -v error -select_streams a:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 #{path}`.strip },
-  max_audio_sample_rate: ->(path) { `ffprobe -v error -select_streams a:0 -show_entries stream=sample_rate -of default=noprint_wrappers=1:nokey=1 #{path}`.to_i / 1000.0 },
-  video_codecs: ->(path) { `ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 #{path}`.strip },
-  color_space: ->(path) {
-    cs = `ffprobe -v error -select_streams v:0 -show_entries stream=pix_fmt -of default=noprint_wrappers=1:nokey=1 #{path}`.strip
-    cs == "yuv420p" ? "4:2:0" : cs
+VALIDATIONS = {
+  min_frame_rate: {
+    spec: 23,
+    command: (fps = ->(path) { `ffprobe -v error -select_streams v:0 -show_entries stream=r_frame_rate -of default=noprint_wrappers=1:nokey=1 #{path}`[/\A\w+/].to_i }),
+    test: ->(path) { fps.call(path) >= 23 }
   },
-  horizontal_pixels: ->(path) { `ffprobe -v error -select_streams v:0 -show_entries stream=width -of default=noprint_wrappers=1:nokey=1 #{path}`.to_i },
-  min_aspect_ratio: ->(path) {
-    w = `ffprobe -v error -select_streams v:0 -show_entries stream=width -of default=noprint_wrappers=1:nokey=1 #{path}`.to_f
-    h = `ffprobe -v error -select_streams v:0 -show_entries stream=height -of default=noprint_wrappers=1:nokey=1 #{path}`.to_f
-    w / h
+  max_frame_rate: {
+    spec: 60,
+    command: fps,
+    test: ->(path) { fps.call(path) <= 60 }
   },
-  max_aspect_ratio: ->(path) {
-    w = `ffprobe -v error -select_streams v:0 -show_entries stream=width -of default=noprint_wrappers=1:nokey=1 #{path}`.to_f
-    h = `ffprobe -v error -select_streams v:0 -show_entries stream=height -of default=noprint_wrappers=1:nokey=1 #{path}`.to_f
-    w / h
+  container: {
+    spec: ["mov", "mp4"],
+    command: ->(path) { `ffprobe -v error -show_entries format=format_name -of default=noprint_wrappers=1:nokey=1 #{path}`.strip.split(",") },
+    test: ->(path) { ( `ffprobe -v error -show_entries format=format_name -of default=noprint_wrappers=1:nokey=1 #{path}`.strip.split(",") & ["mov", "mp4"] ).any? }
   },
-  max_video_bitrate_mbps: ->(path) { `ffprobe -v error -select_streams v:0 -show_entries stream=bit_rate -of default=noprint_wrappers=1:nokey=1 #{path}`.to_i / 1_000_000.0 },
-  max_audio_bitrate_kbps: ->(path) { `ffprobe -v error -select_streams a:0 -show_entries stream=bit_rate -of default=noprint_wrappers=1:nokey=1 #{path}`.to_i / 1000.0 },
-  min_duration_seconds: ->(path) { `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 #{path}`.to_f },
-  max_duration_seconds: ->(path) { `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 #{path}`.to_f },
-  max_size_megabytes: ->(path) { File.size(path).to_f / 1_000_000.0 }
-}
-
-SPEC_TESTS = {
-  min_frame_rate: ->(path) {
-    SPEC_COMMANDS[:min_frame_rate].call(path) >= REEL_SPECIFICATIONS[:min_frame_rate]
+  audio_codec: {
+    spec: "aac",
+    command: ->(path) { `ffprobe -v error -select_streams a:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 #{path}`.strip },
+    test: ->(path) { `ffprobe -v error -select_streams a:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 #{path}`.strip == "aac" }
   },
-  max_frame_rate: ->(path) {
-    SPEC_COMMANDS[:max_frame_rate].call(path) <= REEL_SPECIFICATIONS[:max_frame_rate]
+  max_audio_sample_rate: {
+    spec: 48,
+    command: ->(path) { `ffprobe -v error -select_streams a:0 -show_entries stream=sample_rate -of default=noprint_wrappers=1:nokey=1 #{path}`.to_i / 1000.0 },
+    test: ->(path) { `ffprobe -v error -select_streams a:0 -show_entries stream=sample_rate -of default=noprint_wrappers=1:nokey=1 #{path}`.to_i / 1000.0 <= 48 }
   },
-  container: ->(path) { (SPEC_COMMANDS[:container].call(path) & REEL_SPECIFICATIONS[:container]).any? },
-  audio_codec: ->(path) { SPEC_COMMANDS[:audio_codec].call(path) == REEL_SPECIFICATIONS[:audio_codec] },
-  max_audio_sample_rate: ->(path) { SPEC_COMMANDS[:max_audio_sample_rate].call(path) <= REEL_SPECIFICATIONS[:max_audio_sample_rate] },
-  video_codecs: ->(path) { REEL_SPECIFICATIONS[:video_codecs].include?(SPEC_COMMANDS[:video_codecs].call(path)) },
-  color_space: ->(path) { SPEC_COMMANDS[:color_space].call(path) == REEL_SPECIFICATIONS[:color_space] },
-  horizontal_pixels: ->(path) { SPEC_COMMANDS[:horizontal_pixels].call(path) == REEL_SPECIFICATIONS[:horizontal_pixels] },
-  min_aspect_ratio: ->(path) { SPEC_COMMANDS[:min_aspect_ratio].call(path) >= REEL_SPECIFICATIONS[:min_aspect_ratio] },
-  max_aspect_ratio: ->(path) { SPEC_COMMANDS[:max_aspect_ratio].call(path) <= REEL_SPECIFICATIONS[:max_aspect_ratio] },
-  max_video_bitrate_mbps: ->(path) { SPEC_COMMANDS[:max_video_bitrate_mbps].call(path) <= REEL_SPECIFICATIONS[:max_video_bitrate_mbps] },
-  max_audio_bitrate_kbps: ->(path) { SPEC_COMMANDS[:max_audio_bitrate_kbps].call(path) <= REEL_SPECIFICATIONS[:max_audio_bitrate_kbps] },
-  min_duration_seconds: ->(path) { SPEC_COMMANDS[:min_duration_seconds].call(path) >= REEL_SPECIFICATIONS[:min_duration_seconds] },
-  max_duration_seconds: ->(path) { SPEC_COMMANDS[:max_duration_seconds].call(path) <= REEL_SPECIFICATIONS[:max_duration_seconds] },
-  max_size_megabytes: ->(path) { SPEC_COMMANDS[:max_size_megabytes].call(path) <= REEL_SPECIFICATIONS[:max_size_megabytes] }
+  video_codecs: {
+    spec: ["h264", "hevc"],
+    command: ->(path) { `ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 #{path}`.strip },
+    test: ->(path) { ["h264", "hevc"].include?(`ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 #{path}`.strip) }
+  },
+  color_space: {
+    spec: "4:2:0",
+    command: ->(path) {
+      cs = `ffprobe -v error -select_streams v:0 -show_entries stream=pix_fmt -of default=noprint_wrappers=1:nokey=1 #{path}`.strip
+      cs == "yuv420p" ? "4:2:0" : cs
+    },
+    test: ->(path) {
+      cs = `ffprobe -v error -select_streams v:0 -show_entries stream=pix_fmt -of default=noprint_wrappers=1:nokey=1 #{path}`.strip
+      (cs == "yuv420p" ? "4:2:0" : cs) == "4:2:0"
+    }
+  },
+  horizontal_pixels: {
+    spec: 1920,
+    command: ->(path) { `ffprobe -v error -select_streams v:0 -show_entries stream=width -of default=noprint_wrappers=1:nokey=1 #{path}`.to_i },
+    test: ->(path) { `ffprobe -v error -select_streams v:0 -show_entries stream=width -of default=noprint_wrappers=1:nokey=1 #{path}`.to_i == 1920 }
+  },
+  min_aspect_ratio: {
+    spec: 0.01,
+    command: ->(path) {
+      w = `ffprobe -v error -select_streams v:0 -show_entries stream=width -of default=noprint_wrappers=1:nokey=1 #{path}`.to_f
+      h = `ffprobe -v error -select_streams v:0 -show_entries stream=height -of default=noprint_wrappers=1:nokey=1 #{path}`.to_f
+      w / h
+    },
+    test: ->(path) {
+      w = `ffprobe -v error -select_streams v:0 -show_entries stream=width -of default=noprint_wrappers=1:nokey=1 #{path}`.to_f
+      h = `ffprobe -v error -select_streams v:0 -show_entries stream=height -of default=noprint_wrappers=1:nokey=1 #{path}`.to_f
+      (w / h) >= 0.01
+    }
+  },
+  max_aspect_ratio: {
+    spec: 10.0,
+    command: ->(path) {
+      w = `ffprobe -v error -select_streams v:0 -show_entries stream=width -of default=noprint_wrappers=1:nokey=1 #{path}`.to_f
+      h = `ffprobe -v error -select_streams v:0 -show_entries stream=height -of default=noprint_wrappers=1:nokey=1 #{path}`.to_f
+      w / h
+    },
+    test: ->(path) {
+      w = `ffprobe -v error -select_streams v:0 -show_entries stream=width -of default=noprint_wrappers=1:nokey=1 #{path}`.to_f
+      h = `ffprobe -v error -select_streams v:0 -show_entries stream=height -of default=noprint_wrappers=1:nokey=1 #{path}`.to_f
+      (w / h) <= 10.0
+    }
+  },
+  max_video_bitrate_mbps: {
+    spec: 25,
+    command: ->(path) { `ffprobe -v error -select_streams v:0 -show_entries stream=bit_rate -of default=noprint_wrappers=1:nokey=1 #{path}`.to_i / 1_000_000.0 },
+    test: ->(path) { `ffprobe -v error -select_streams v:0 -show_entries stream=bit_rate -of default=noprint_wrappers=1:nokey=1 #{path}`.to_i / 1_000_000.0 <= 25 }
+  },
+  max_audio_bitrate_kbps: {
+    spec: 128,
+    command: ->(path) { `ffprobe -v error -select_streams a:0 -show_entries stream=bit_rate -of default=noprint_wrappers=1:nokey=1 #{path}`.to_i / 1000.0 },
+    test: ->(path) { `ffprobe -v error -select_streams a:0 -show_entries stream=bit_rate -of default=noprint_wrappers=1:nokey=1 #{path}`.to_i / 1000.0 <= 128 }
+  },
+  min_duration_seconds: {
+    spec: 3,
+    command: ->(path) { `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 #{path}`.to_f },
+    test: ->(path) { `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 #{path}`.to_f >= 3 }
+  },
+  max_duration_seconds: {
+    spec: 900,
+    command: ->(path) { `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 #{path}`.to_f },
+    test: ->(path) { `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 #{path}`.to_f <= 900 }
+  },
+  max_size_megabytes: {
+    spec: 300,
+    command: ->(path) { File.size(path).to_f / 1_000_000.0 },
+    test: ->(path) { File.size(path).to_f / 1_000_000.0 <= 300 }
+  }
 }
 
 DOCS_URL = "https://developers.facebook.com/docs/instagram-platform/instagram-graph-api/reference/ig-user/media"
@@ -77,12 +109,12 @@ if video_path.empty?
 end
 
 puts "Validating video: #{video_path}\n\n"
-results = SPEC_TESTS.map do |spec, test|
-  if test.call(video_path)
+results = VALIDATIONS.map do |spec, details|
+  if details[:test].call(video_path)
     puts "✅ #{spec}"
     true
   else
-    puts "❌ #{spec} - #{REEL_SPECIFICATIONS[spec]} required; got: #{SPEC_COMMANDS[spec].call(video_path)}"
+    puts "❌ #{spec} - #{details[:spec]} required; got: #{details[:command].call(video_path)}"
     false
   end
 end
