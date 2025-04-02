@@ -8,10 +8,16 @@ EDITOR="code-insiders"
 
 # Process arguments
 args=()
+editor_flags=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --stable)
       EDITOR="code-stable"
+      shift
+      ;;
+    --*)
+      # Capture other flags to pass through to the editor
+      editor_flags+=("$1")
       shift
       ;;
     *)
@@ -24,20 +30,33 @@ done
 # If no paths provided, exit with error
 if [ ${#args[@]} -eq 0 ]; then
   echo "Error: No project paths provided."
-  echo "Usage: $(basename "$0") [--stable] path1 [path2 ...]"
+  echo "Usage: $(basename "$0") [--stable] [editor flags] path1 [path2 ...]"
   exit 1
 fi
 
 # Process each path argument
 for path in "${args[@]}"; do
-  full_path="$CODE_DIR/$path"
-  
-  # Check if path exists
-  if [ ! -d "$full_path" ]; then
-    echo "Warning: Directory does not exist: $full_path"
+  # Special case for current directory (.)
+  if [ "$path" = "." ]; then
+    "$EDITOR" ${editor_flags[@]} "."
     continue
   fi
+
+  # Check if path is absolute
+  if [[ "$path" = /* ]]; then
+    # Absolute path, use directly
+    "$EDITOR" ${editor_flags[@]} "$path"
+    continue
+  fi
+
+  # First try to match at the code directory
+  full_path="$CODE_DIR/$path"
   
-  # Open in the selected editor
-  "$EDITOR" "$full_path"
+  # If the path exists in the code directory, use that
+  if [ -d "$full_path" ]; then
+    "$EDITOR" ${editor_flags[@]} "$full_path"
+  else
+    # Otherwise, pass the path directly to the editor
+    "$EDITOR" ${editor_flags[@]} "$path"
+  fi
 done
