@@ -4,34 +4,34 @@ VALIDATIONS = {
 
   container: {
     spec: "Container: MOV or MP4 (MPEG-4 Part 14)",
-    command: ->(path) { `ffprobe -v error -show_entries format=format_name -of default=noprint_wrappers=1:nokey=1 #{path}`.strip.split(",") },
+    command: ->(path) { `ffprobe -v error -show_entries format=format_name -of default=noprint_wrappers=1:nokey=1 "#{path}"`.strip.split(",") },
     test: ->(result) { (result & ["mov", "mp4"]).any? }
   },
   audio_codec: {
     spec: "Audio codec: AAC",
-    command: ->(path) { `ffprobe -v error -select_streams a:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 #{path}`.strip },
+    command: ->(path) { `ffprobe -v error -select_streams a:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 "#{path}"`.strip },
     test: ->(result) { result == "aac" }
   },
   max_audio_sample_rate: {
     spec: "Audio codec: 48khz sample rate maximum",
-    command: ->(path) { `ffprobe -v error -select_streams a:0 -show_entries stream=sample_rate -of default=noprint_wrappers=1:nokey=1 #{path}`.to_i / 1000.0 },
+    command: ->(path) { `ffprobe -v error -select_streams a:0 -show_entries stream=sample_rate -of default=noprint_wrappers=1:nokey=1 "#{path}"`.to_i / 1000.0 },
     test: ->(result) { result <= 48 }
   },
   video_codecs: {
     spec: "Video codec: HEVC or H264",
-    command: ->(path) { `ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 #{path}`.strip },
+    command: ->(path) { `ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 "#{path}"`.strip },
     test: ->(result) { ["h264", "hevc"].include?(result) }
   },
   color_space: {
     spec: "Video codec: progressive scan, 4:2:0 chroma subsampling",
     command: ->(path) {
-      `ffprobe -v error -select_streams v:0 -show_entries stream=pix_fmt -of default=noprint_wrappers=1:nokey=1 #{path}`.strip
+      `ffprobe -v error -select_streams v:0 -show_entries stream=pix_fmt -of default=noprint_wrappers=1:nokey=1 "#{path}"`.strip
     },
     test: ->(result) { result == "yuv420p" }
   },
   min_frame_rate: {
     spec: "Frame rate: minimum 23 FPS",
-    command: (fps = ->(path) { `ffprobe -v error -select_streams v:0 -show_entries stream=r_frame_rate -of default=noprint_wrappers=1:nokey=1 #{path}`[/\A\w+/].to_i }),
+    command: (fps = ->(path) { `ffprobe -v error -select_streams v:0 -show_entries stream=r_frame_rate -of default=noprint_wrappers=1:nokey=1 "#{path}"`[/\A\w+/].to_i }),
     test: ->(result) { result >= 23 }
   },
   max_frame_rate: {
@@ -41,14 +41,14 @@ VALIDATIONS = {
   },
   max_horizontal_pixels: {
     spec: "Maximum columns (horizontal pixels): 1920",
-    command: ->(path) { `ffprobe -v error -select_streams v:0 -show_entries stream=width -of default=noprint_wrappers=1:nokey=1 #{path}`.to_i },
+    command: ->(path) { `ffprobe -v error -select_streams v:0 -show_entries stream=width -of default=noprint_wrappers=1:nokey=1 "#{path}"`.to_i },
     test: ->(result) { result <= 1920 }
   },
   min_aspect_ratio: {
     spec: "Aspect ratio: minimum 0.01:1",
     command: (aspect_ratio = ->(path) {
-      w = `ffprobe -v error -select_streams v:0 -show_entries stream=width -of default=noprint_wrappers=1:nokey=1 #{path}`.to_f
-      h = `ffprobe -v error -select_streams v:0 -show_entries stream=height -of default=noprint_wrappers=1:nokey=1 #{path}`.to_f
+      w = `ffprobe -v error -select_streams v:0 -show_entries stream=width -of default=noprint_wrappers=1:nokey=1 "#{path}"`.to_f
+      h = `ffprobe -v error -select_streams v:0 -show_entries stream=height -of default=noprint_wrappers=1:nokey=1 "#{path}"`.to_f
       w / h
     }),
     test: ->(result) { result >= 0.01 }
@@ -60,17 +60,17 @@ VALIDATIONS = {
   },
   max_video_bitrate_mbps: {
     spec: "Video bitrate: 25Mbps maximum",
-    command: ->(path) { `ffprobe -v error -select_streams v:0 -show_entries stream=bit_rate -of default=noprint_wrappers=1:nokey=1 #{path}`.to_i / 1_000_000.0 },
+    command: ->(path) { `ffprobe -v error -select_streams v:0 -show_entries stream=bit_rate -of default=noprint_wrappers=1:nokey=1 "#{path}"`.to_i / 1_000_000.0 },
     test: ->(result) { result <= 25 }
   },
   max_audio_bitrate_kbps: {
     spec: "Audio bitrate: 128kbps maximum",
-    command: ->(path) { `ffprobe -v error -select_streams a:0 -show_entries stream=bit_rate -of default=noprint_wrappers=1:nokey=1 #{path}`.to_i / 1000.0 },
+    command: ->(path) { `ffprobe -v error -select_streams a:0 -show_entries stream=bit_rate -of default=noprint_wrappers=1:nokey=1 "#{path}"`.to_i / 1000.0 },
     test: ->(result) { result <= 128 }
   },
   min_duration_seconds: {
     spec: "Duration: minimum 3 seconds",
-    command: (duration_seconds = ->(path) { `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 #{path}`.to_f }),
+    command: (duration_seconds = ->(path) { `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "#{path}"`.to_f }),
     test: ->(result) { result >= 3 }
   },
   max_duration_seconds: {

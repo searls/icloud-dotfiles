@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+# Define the base code directory
+CODE_DIR=~/code
+
+# Default to code-insiders unless --stable flag is passed
+EDITOR="code-insiders"
+
+# Process arguments
+args=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --stable)
+      EDITOR="code-stable"
+      shift
+      ;;
+    *)
+      args+=("$1")
+      shift
+      ;;
+  esac
+done
+
+# If no paths provided, exit with error
+if [ ${#args[@]} -eq 0 ]; then
+  echo "Error: No project paths provided."
+  echo "Usage: $(basename "$0") [--stable] path1 [path2 ...]"
+  exit 1
+fi
+
+# Process each path argument
+for path in "${args[@]}"; do
+  full_path="$CODE_DIR/$path"
+  
+  # Check if path exists
+  if [ ! -d "$full_path" ]; then
+    echo "Warning: Directory does not exist: $full_path"
+    continue
+  fi
+  
+  # Open in the selected editor
+  "$EDITOR" "$full_path"
+done
