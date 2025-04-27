@@ -95,3 +95,4 @@ then
     done
   fi
 fi
+PATH="$PATH:$HOME/.local/bin"

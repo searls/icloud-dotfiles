@@ -1,0 +1,92 @@
+#!/usr/bin/env ruby
+
+# Guard: Ensure exifr/jpeg is installed
+begin
+  require "exifr/jpeg"
+rescue LoadError
+  puts "Missing required gem: exifr. Installing..."
+  system("gem install exifr")
+  Gem.clear_paths
+  require "exifr/jpeg"
+end
+
+# Guard: Ensure exiftool is available
+unless system("which exiftool > /dev/null 2>&1")
+  puts "Missing required tool: exiftool. Installing via Homebrew..."
+  system("brew install exiftool")
+end
+
+require "fileutils"
+require "time"
+
+def usage
+  puts "Usage: #{$0} <directory>"
+  exit 1
+end
+
+dir = ARGV[0] or usage
+
+dir = File.expand_path(dir)
+unless Dir.exist?(dir)
+  puts "Directory not found: #{dir}"
+  exit 1
+end
+
+# Get all files in the directory whose basename is only digits (no extension restriction)
+files = Dir.entries(dir).select { |f|
+  File.file?(File.join(dir, f)) && File.basename(f, File.extname(f)) =~ /^\d+$/
+}
+
+# Group files by date from EXIF, then sort and rename
+by_date = Hash.new { |h, k| h[k] = [] }
+
+# Track the last known exif_date for fallback
+last_exif_date = nil
+
+files.each do |filename|
+  path = File.join(dir, filename)
+  ext = File.extname(filename)
+  # puts "Processing: #{filename} (#{ext})"
+  exif_date = nil
+  begin
+    case ext.downcase
+    when ".jpg", ".jpeg"
+      exif = EXIFR::JPEG.new(path)
+      exif_date = exif.date_time_original || exif.date_time
+      # puts "  JPEG EXIF date: #{exif_date}" if exif_date
+    when ".heic", ".heif"
+      exiftool_output = `exiftool -DateTimeOriginal -d "%Y:%m:%d %H:%M:%S" #{Shellwords.escape(path)} 2>/dev/null`
+      if exiftool_output =~ /Date\/Time Original\s+: (.+)/
+        exif_date = Time.parse($1)
+        # puts "  HEIC EXIF date: #{exif_date}"
+      end
+    when ".mov"
+      exiftool_output = `exiftool -CreateDate -d "%Y:%m:%d %H:%M:%S" #{Shellwords.escape(path)} 2>/dev/null`
+      if exiftool_output =~ /Create Date\s+: (.+)/
+        exif_date = Time.parse($1)
+        # puts "  MOV EXIF date: #{exif_date}"
+      end
+    end
+  rescue
+    # puts "  Error extracting EXIF for #{filename}"
+  end
+  exif_date ||= last_exif_date || File.mtime(path)
+  # puts "  Using date: #{exif_date}"
+  last_exif_date = exif_date
+  date_str = exif_date.strftime("%Y-%m-%d")
+  by_date[date_str] << {path: path, ext: ext, exif_date: exif_date}
+end
+
+by_date.each do |date, files|
+  files.sort_by! { |f| f[:exif_date] }
+  files.each_with_index do |file, idx|
+    new_basename = sprintf("%s-%04d", date, idx + 1)
+    new_ext = file[:ext].downcase
+    new_name = "#{new_basename}#{new_ext}"
+    new_path = File.join(dir, new_name)
+    old_name = File.basename(file[:path])
+    puts "#{old_name}\t->\t#{new_name}\tmtime: #{file[:exif_date]}"
+    FileUtils.mv(file[:path], new_path)
+    File.utime(file[:exif_date], file[:exif_date], new_path)
+  end
+end

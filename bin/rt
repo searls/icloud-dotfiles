@@ -4,6 +4,9 @@ if (bundle list | grep tldr >/dev/null 2>&1); then
   bundle exec tldr test "$@"
 elif (bundle list | grep rails >/dev/null 2>&1); then
   bundle exec rails test "$@"
-else
+elif (bundle list | grep m >/dev/null 2>&1); then
   bundle exec m "$@"
+else
+  echo "Don't know how to run test"
+  exit 1
 fi

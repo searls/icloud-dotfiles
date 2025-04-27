@@ -9,6 +9,8 @@
 /.config/gh
 /.config/stripe
 /.config/configstore
+/.config/karabiner/automatic_backups
+/.config/simple-update-notifier
 /bin/yt-dlp
 /config/mackup
 /.netrc
