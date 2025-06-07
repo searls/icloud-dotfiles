@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+set -eu
+
+git_root=$(git rev-parse --show-toplevel)
+
+print_changed_files() {
+  for i in "${!changed_files[@]}"; do
+    f="${changed_files[$i]}"
+    code="${file_statuses[$i]}"
+    rel_path=$(realpath --relative-to="$git_root" "$f" 2>/dev/null || printf '%q' "$f")
+    printf '%s %s\n' "$code" "$rel_path"
+  done
+}
+
+echo "Pulling…"
+git pull --rebase || true
+
+
+# Use an array to split the output on null bytes, avoiding null byte warnings
+mapfile -d '' -t status_entries < <(git status --porcelain -z)
+
+changed_files=()
+file_statuses=()
+
+for entry in "${status_entries[@]}"; do
+  code=${entry:0:2}
+  file=${entry:3}
+  changed_files+=("$file")
+  file_statuses+=("$code")
+done
+
+count=${#changed_files[@]}
+
+# Only run commit/pump logic if there are changes
+if (( count > 0 )); then
+  # Normalize file extensions to lower-case for content check
+  all_content_files=true
+  for f in "${changed_files[@]}"; do
+    ext="${f##*.}"
+    ext_lc="${ext,,}"
+    case "$ext_lc" in
+      txt|md|markdown|png|jpg|jpeg|gif|svg|webp|bmp|tiff|yml|toml)
+        ;;
+      *)
+        all_content_files=false
+        break
+        ;;
+    esac
+  done
+
+  git_root=$(git rev-parse --show-toplevel)
+
+  should_pump=false
+  if (( count == 1 )) || $all_content_files; then
+    should_pump=true
+    echo "I'mma pump 'em:"
+    print_changed_files
+  else
+    echo "Changed files:"
+    print_changed_files
+    read -r -p "Pump it? [Y/n] " answer
+    if [[ $answer =~ ^[Yy]?$ ]]; then
+      should_pump=true
+    else
+      echo "Dumped"
+      exit 1
+    fi
+  fi
+
+  if $should_pump; then
+    git add .
+    git commit -m "lol"
+  fi
+else
+  echo "No changes to commit"
+fi
+
+
+# Always push if local branch is ahead of origin, even if no new commit was made
+local_ahead=$(git rev-list --count @{u}..HEAD 2>/dev/null || echo 0)
+if (( local_ahead > 0 )); then
+  echo "Local branch is ahead of origin by $local_ahead commits. Pushing..."
+  git push
+fi
+

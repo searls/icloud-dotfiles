@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
 
-fork "$@"
+# fork "$@"
 
+echo "Run 'git pump' or 'fork .'"
+exit 1
