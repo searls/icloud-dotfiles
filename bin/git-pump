@@ -8,7 +8,7 @@ print_changed_files() {
     f="${changed_files[$i]}"
     code="${file_statuses[$i]}"
     rel_path=$(realpath --relative-to="$git_root" "$f" 2>/dev/null || printf '%q' "$f")
-    printf '%s %s\n' "$code" "$rel_path"
+    printf '  - %s %s\n' "$code" "$rel_path"
   done
 }
 
@@ -53,10 +53,10 @@ if (( count > 0 )); then
   should_pump=false
   if (( count == 1 )) || $all_content_files; then
     should_pump=true
-    echo "I'mma pump 'em:"
+    echo "\n\nI'mma pump these changes:\n"
     print_changed_files
   else
-    echo "Changed files:"
+    echo "\n\nYou've changed these files:\n"
     print_changed_files
     read -r -p "Pump it? [Y/n] " answer
     if [[ $answer =~ ^[Yy]?$ ]]; then
