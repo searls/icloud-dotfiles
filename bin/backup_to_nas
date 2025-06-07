@@ -9,6 +9,7 @@ echo "Backing up iCloud Documents to Synology NAS over SSH"
 rsync --archive --delete --compress --progress --partial --update --human-readable \
   --exclude=".DS_Store" --exclude="node_modules/" \
   --rsync-path="/usr/bin/rsync" \
+  --delay-updates --ignore-errors \
   -e "ssh -i ~/.ssh/id_ed25519 -p $nas_ssh_port" \
   /Users/justin/Documents/ "searls@$nas_ip_address:~/backups/documents"
 
@@ -16,5 +17,6 @@ echo "Backing up Local Keepsakes to Synology NAS over SSH"
 rsync --archive --delete --compress --progress --partial --update --human-readable \
   --exclude=".DS_Store" --exclude="node_modules/" \
   --rsync-path="/usr/bin/rsync" \
+  --delay-updates --ignore-errors \
   -e "ssh -i ~/.ssh/id_ed25519 -p $nas_ssh_port" \
   /Users/justin/keepsakes/ "searls@$nas_ip_address:~/backups/keepsakes"

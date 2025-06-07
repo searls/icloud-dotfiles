@@ -53,18 +53,16 @@ files.each do |filename|
     when ".jpg", ".jpeg"
       exif = EXIFR::JPEG.new(path)
       exif_date = exif.date_time_original || exif.date_time
-      # puts "  JPEG EXIF date: #{exif_date}" if exif_date
-    when ".heic", ".heif"
-      exiftool_output = `exiftool -DateTimeOriginal -d "%Y:%m:%d %H:%M:%S" #{Shellwords.escape(path)} 2>/dev/null`
-      if exiftool_output =~ /Date\/Time Original\s+: (.+)/
-        exif_date = Time.parse($1)
-        # puts "  HEIC EXIF date: #{exif_date}"
-      end
     when ".mov"
       exiftool_output = `exiftool -CreateDate -d "%Y:%m:%d %H:%M:%S" #{Shellwords.escape(path)} 2>/dev/null`
       if exiftool_output =~ /Create Date\s+: (.+)/
         exif_date = Time.parse($1)
-        # puts "  MOV EXIF date: #{exif_date}"
+      end
+    else
+      # Try exiftool for any other extension (likely raw or uncommon formats)
+      exiftool_output = `exiftool -DateTimeOriginal -d "%Y:%m:%d %H:%M:%S" #{Shellwords.escape(path)} 2>/dev/null`
+      if exiftool_output =~ /Date\/Time Original\s+: (.+)/
+        exif_date = Time.parse($1)
       end
     end
   rescue
