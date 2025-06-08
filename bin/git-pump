@@ -53,10 +53,10 @@ if (( count > 0 )); then
   should_pump=false
   if (( count == 1 )) || $all_content_files; then
     should_pump=true
-    echo "\n\nI'mma pump these changes:\n"
+    echo -e "\n\nI'mma pump these changes:\n"
     print_changed_files
   else
-    echo "\n\nYou've changed these files:\n"
+    echo -e "\n\nYou've changed these files:\n"
     print_changed_files
     read -r -p "Pump it? [Y/n] " answer
     if [[ $answer =~ ^[Yy]?$ ]]; then
