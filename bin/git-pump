@@ -39,7 +39,7 @@ if (( count > 0 )); then
     ext="${f##*.}"
     ext_lc="${ext,,}"
     case "$ext_lc" in
-      txt|md|markdown|png|jpg|jpeg|gif|svg|webp|bmp|tiff|yml|toml)
+      txt|md|markdown|png|jpg|jpeg|gif|svg|webp|bmp|tiff)
         ;;
       *)
         all_content_files=false
