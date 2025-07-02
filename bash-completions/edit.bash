@@ -103,10 +103,20 @@ _edit_completion() {
     COMPREPLY=($(compgen -W "${unique_suggestions[*]}" -- "$cur"))
 
     # If we have exactly one completion and it's a directory, add a trailing slash
+    # BUT NOT for org/repo patterns or potential repository names
     if [[ ${#COMPREPLY[@]} -eq 1 ]]; then
         local suggestion="${COMPREPLY[0]}"
-        # Check if it's a directory (handle various path formats)
-        if [[ -d "$suggestion" ]] || [[ -d "./$suggestion" ]] || [[ -d "$code_dir/$suggestion" ]] || [[ -d "$code_dir/$default_org/$suggestion" ]]; then
+
+        # Don't add trailing slash for org/repo patterns
+        if [[ "$suggestion" == */* ]]; then
+            # This is an org/repo pattern, don't add trailing slash
+            :
+        # Don't add trailing slash if this looks like a repository name
+        elif [[ -d "$code_dir/$suggestion" ]] || [[ -d "$code_dir/$default_org/$suggestion" ]]; then
+            # This is likely a repository, don't add trailing slash
+            :
+        # Only add trailing slash for local directory navigation (current dir, relative paths)
+        elif [[ -d "$suggestion" ]] || [[ -d "./$suggestion" ]]; then
             # Don't add slash if it already ends with one
             if [[ "$suggestion" != */ ]]; then
                 COMPREPLY[0]="$suggestion/"

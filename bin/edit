@@ -20,6 +20,11 @@ fi
 find_or_clone_repo() {
   local input="$1"
 
+  # Strip trailing slashes (except for root directory)
+  if [[ "$input" != "/" ]]; then
+    input="${input%/}"
+  fi
+
   # Handle current directory
   if [ "$input" = "." ] || [ "$input" = ".." ]; then
     echo "$(pwd)/$input"
