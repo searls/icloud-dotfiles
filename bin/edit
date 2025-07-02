@@ -3,7 +3,18 @@
 # Configuration (with environment variable fallbacks)
 CODE_DIR=${CODE_DIR:-"$HOME/code"}
 DEFAULT_ORG=${DEFAULT_ORG:-"searls"}
-EDITOR_BIN=${EDITOR_BIN:-"cursor"}
+DEFAULT_EDITOR=${DEFAULT_EDITOR:-"cursor"}
+
+# Validate configuration
+if [ ! -d "$CODE_DIR" ]; then
+  echo "Error: CODE_DIR '$CODE_DIR' does not exist" >&2
+  exit 1
+fi
+
+if ! command -v "$DEFAULT_EDITOR" >/dev/null 2>&1; then
+  echo "Error: DEFAULT_EDITOR '$DEFAULT_EDITOR' is not executable or not found in PATH" >&2
+  exit 1
+fi
 
 # Function to find or clone a repository
 find_or_clone_repo() {
@@ -23,8 +34,15 @@ find_or_clone_repo() {
 
   # Check if it contains a slash (org/repo pattern)
   if [[ "$input" == */* ]]; then
-    local org=$(echo "$input" | cut -d'/' -f1)
-    local repo=$(echo "$input" | cut -d'/' -f2)
+    # Count slashes to ensure it's only org/repo format
+    local slash_count=$(echo "$input" | tr -cd '/' | wc -c)
+    if [ "$slash_count" -gt 1 ]; then
+      echo "Error: '$input' contains multiple slashes. Only 'org/repo' format is supported for GitHub cloning." >&2
+      return 1
+    fi
+
+    local org="${input%/*}"
+    local repo="${input#*/}"
 
     # Check if relative path exists
     if [ -d "$input" ]; then
@@ -40,12 +58,20 @@ find_or_clone_repo() {
 
     # Try to clone it
     echo "Repository not found locally. Cloning $org/$repo..." >&2
-    mkdir -p "$CODE_DIR/$org"
+    mkdir -p "$CODE_DIR/$org" || {
+      echo "Error: Failed to create directory '$CODE_DIR/$org'" >&2
+      return 1
+    }
+
+    local original_dir=$(pwd)
     if cd "$CODE_DIR/$org" && git clone "git@github.com:$org/$repo.git"; then
+      cd "$original_dir"
       echo "$CODE_DIR/$org/$repo"
       return 0
     else
+      cd "$original_dir"
       echo "Error: Failed to clone git@github.com:$org/$repo.git" >&2
+      echo "This could be due to network issues, authentication problems, or the repository not existing." >&2
       return 1
     fi
   else
@@ -71,12 +97,20 @@ find_or_clone_repo() {
 
     # Try to clone from default org
     echo "Repository not found locally. Cloning $DEFAULT_ORG/$input..." >&2
-    mkdir -p "$CODE_DIR/$DEFAULT_ORG"
+    mkdir -p "$CODE_DIR/$DEFAULT_ORG" || {
+      echo "Error: Failed to create directory '$CODE_DIR/$DEFAULT_ORG'" >&2
+      return 1
+    }
+
+    local original_dir=$(pwd)
     if cd "$CODE_DIR/$DEFAULT_ORG" && git clone "git@github.com:$DEFAULT_ORG/$input.git"; then
+      cd "$original_dir"
       echo "$CODE_DIR/$DEFAULT_ORG/$input"
       return 0
     else
+      cd "$original_dir"
       echo "Error: Failed to clone git@github.com:$DEFAULT_ORG/$input.git" >&2
+      echo "This could be due to network issues, authentication problems, or the repository not existing." >&2
       return 1
     fi
   fi
@@ -87,12 +121,18 @@ launch_editor() {
   local editor="$1"
   local path="$2"
 
+  # Validate that the path exists and is a directory
+  if [ ! -d "$path" ]; then
+    echo "Error: '$path' is not a valid directory" >&2
+    return 1
+  fi
+
   case "$editor" in
     vim)
-      cd "$path" && vim .
+      (cd "$path" && vim .)
       ;;
     claude)
-      cd "$path" && claude
+      (cd "$path" && claude)
       ;;
     code|code-insiders|cursor)
       "$editor" "$path"
@@ -106,7 +146,7 @@ launch_editor() {
 }
 
 # Parse arguments
-editor="$EDITOR_BIN"
+editor="$DEFAULT_EDITOR"
 paths=()
 
 while [[ $# -gt 0 ]]; do
@@ -123,7 +163,7 @@ while [[ $# -gt 0 ]]; do
       echo "Usage: $(basename "$0") [--editor|-e EDITOR] path1 [path2 ...]"
       echo ""
       echo "EDITOR options: vim, code, code-insiders, cursor, claude"
-      echo "Default editor: $EDITOR_BIN"
+      echo "Default editor: $DEFAULT_EDITOR"
       echo ""
       echo "Path resolution:"
       echo "  bare_repo        -> ~/code/searls/bare_repo (clone if needed)"
@@ -155,9 +195,8 @@ fi
 
 # Process each path
 for path_input in "${paths[@]}"; do
-  resolved_path=$(find_or_clone_repo "$path_input")
-  if [ $? -eq 0 ]; then
-    launch_editor "$editor" "$resolved_path"
+  if resolved_path=$(find_or_clone_repo "$path_input"); then
+    launch_editor "$editor" "$resolved_path" || exit 1
   else
     echo "Error: Could not resolve path '$path_input'" >&2
     exit 1

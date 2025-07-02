@@ -17,6 +17,9 @@ fi
 ## My own scripts - take priority
 export PATH="$HOME/bin:$PATH"
 
+## /usr/local/bin - apps like aws, code, cursor use this:
+export PATH="/usr/local/bin:$PATH"
+
 # As of 3/12/2024, postgresql@16 is keg-only, so add it to the path
 export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"
 
@@ -96,3 +99,6 @@ then
   fi
 fi
 PATH="$PATH:$HOME/.local/bin"
+
+# Custom bash completion for my ~/bin/edit script
+source "$HOME/icloud-drive/dotfiles/bash-completions/edit.bash"

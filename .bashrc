@@ -1,4 +1,1 @@
-export PATH="/usr/local/bin:$PATH"
-
-[ -f ~/.fzf.bash ] && source ~/.fzf.bash
-
+# Use ~/.profile instead if you can.
