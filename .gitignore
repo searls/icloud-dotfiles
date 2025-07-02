@@ -7,6 +7,7 @@
 /project-dotfiles/**/*
 /.config/raycast
 /.config/gh
+/.config/uv
 /.config/stripe
 /.config/configstore
 /.config/karabiner/automatic_backups
