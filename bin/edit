@@ -1,0 +1,165 @@
+#!/usr/bin/env bash
+
+# Configuration (with environment variable fallbacks)
+CODE_DIR=${CODE_DIR:-"$HOME/code"}
+DEFAULT_ORG=${DEFAULT_ORG:-"searls"}
+EDITOR_BIN=${EDITOR_BIN:-"cursor"}
+
+# Function to find or clone a repository
+find_or_clone_repo() {
+  local input="$1"
+
+  # Handle current directory
+  if [ "$input" = "." ] || [ "$input" = ".." ]; then
+    echo "$(pwd)/$input"
+    return 0
+  fi
+
+  # Handle absolute paths
+  if [[ "$input" = /* ]]; then
+    echo "$input"
+    return 0
+  fi
+
+  # Check if it contains a slash (org/repo pattern)
+  if [[ "$input" == */* ]]; then
+    local org=$(echo "$input" | cut -d'/' -f1)
+    local repo=$(echo "$input" | cut -d'/' -f2)
+
+    # Check if relative path exists
+    if [ -d "$input" ]; then
+      echo "$(pwd)/$input"
+      return 0
+    fi
+
+    # Check if it exists in code directory
+    if [ -d "$CODE_DIR/$org/$repo" ]; then
+      echo "$CODE_DIR/$org/$repo"
+      return 0
+    fi
+
+    # Try to clone it
+    echo "Repository not found locally. Cloning $org/$repo..." >&2
+    mkdir -p "$CODE_DIR/$org"
+    if cd "$CODE_DIR/$org" && git clone "git@github.com:$org/$repo.git"; then
+      echo "$CODE_DIR/$org/$repo"
+      return 0
+    else
+      echo "Error: Failed to clone git@github.com:$org/$repo.git" >&2
+      return 1
+    fi
+  else
+    # Bare repo name - try various locations
+
+    # Check if it's a valid path as-is
+    if [ -d "$input" ]; then
+      echo "$(pwd)/$input"
+      return 0
+    fi
+
+    # Check in code directory root
+    if [ -d "$CODE_DIR/$input" ]; then
+      echo "$CODE_DIR/$input"
+      return 0
+    fi
+
+    # Check in default org directory
+    if [ -d "$CODE_DIR/$DEFAULT_ORG/$input" ]; then
+      echo "$CODE_DIR/$DEFAULT_ORG/$input"
+      return 0
+    fi
+
+    # Try to clone from default org
+    echo "Repository not found locally. Cloning $DEFAULT_ORG/$input..." >&2
+    mkdir -p "$CODE_DIR/$DEFAULT_ORG"
+    if cd "$CODE_DIR/$DEFAULT_ORG" && git clone "git@github.com:$DEFAULT_ORG/$input.git"; then
+      echo "$CODE_DIR/$DEFAULT_ORG/$input"
+      return 0
+    else
+      echo "Error: Failed to clone git@github.com:$DEFAULT_ORG/$input.git" >&2
+      return 1
+    fi
+  fi
+}
+
+# Function to launch editor
+launch_editor() {
+  local editor="$1"
+  local path="$2"
+
+  case "$editor" in
+    vim)
+      cd "$path" && vim .
+      ;;
+    claude)
+      cd "$path" && claude
+      ;;
+    code|code-insiders|cursor)
+      "$editor" "$path"
+      ;;
+    *)
+      echo "Error: Unknown editor '$editor'" >&2
+      echo "Supported editors: vim, code, code-insiders, cursor, claude" >&2
+      return 1
+      ;;
+  esac
+}
+
+# Parse arguments
+editor="$EDITOR_BIN"
+paths=()
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --editor|-e)
+      if [ -z "$2" ]; then
+        echo "Error: --editor/-e requires an argument" >&2
+        exit 1
+      fi
+      editor="$2"
+      shift 2
+      ;;
+    --help|-h)
+      echo "Usage: $(basename "$0") [--editor|-e EDITOR] path1 [path2 ...]"
+      echo ""
+      echo "EDITOR options: vim, code, code-insiders, cursor, claude"
+      echo "Default editor: $EDITOR_BIN"
+      echo ""
+      echo "Path resolution:"
+      echo "  bare_repo        -> ~/code/searls/bare_repo (clone if needed)"
+      echo "  org/repo         -> ~/code/org/repo (clone if needed)"
+      echo "  ./relative/path  -> relative to current directory"
+      echo "  /absolute/path   -> absolute path"
+      echo "  .                -> current directory"
+      exit 0
+      ;;
+    --*)
+      echo "Error: Unknown option '$1'" >&2
+      echo "Use --help for usage information" >&2
+      exit 1
+      ;;
+    *)
+      paths+=("$1")
+      shift
+      ;;
+  esac
+done
+
+# Check if we have at least one path
+if [ ${#paths[@]} -eq 0 ]; then
+  echo "Error: No paths provided." >&2
+  echo "Usage: $(basename "$0") [--editor|-e EDITOR] path1 [path2 ...]" >&2
+  echo "Use --help for more information" >&2
+  exit 1
+fi
+
+# Process each path
+for path_input in "${paths[@]}"; do
+  resolved_path=$(find_or_clone_repo "$path_input")
+  if [ $? -eq 0 ]; then
+    launch_editor "$editor" "$resolved_path"
+  else
+    echo "Error: Could not resolve path '$path_input'" >&2
+    exit 1
+  fi
+done
