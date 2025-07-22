@@ -3,16 +3,11 @@
 # Configuration (with environment variable fallbacks)
 CODE_DIR=${CODE_DIR:-"$HOME/code"}
 DEFAULT_ORG=${DEFAULT_ORG:-"searls"}
-DEFAULT_EDITOR=${DEFAULT_EDITOR:-"cursor"}
+DEFAULT_EDITOR=${DEFAULT_EDITOR:-"code"}
 
 # Validate configuration
 if [ ! -d "$CODE_DIR" ]; then
   echo "Error: CODE_DIR '$CODE_DIR' does not exist" >&2
-  exit 1
-fi
-
-if ! command -v "$DEFAULT_EDITOR" >/dev/null 2>&1; then
-  echo "Error: DEFAULT_EDITOR '$DEFAULT_EDITOR' is not executable or not found in PATH" >&2
   exit 1
 fi
 
@@ -125,6 +120,8 @@ find_or_clone_repo() {
 launch_editor() {
   local editor="$1"
   local path="$2"
+  shift 2
+  local extra_args=("$@")
 
   # Validate that the path exists and is a directory
   if [ ! -d "$path" ]; then
@@ -134,17 +131,23 @@ launch_editor() {
 
   case "$editor" in
     vim)
-      (cd "$path" && vim .)
+      (cd "$path" && vim . "${extra_args[@]}")
       ;;
     claude)
-      (cd "$path" && claude)
+      (cd "$path" && claude "${extra_args[@]}")
+      ;;
+    CLAUDE)
+      (cd "$path" && claude --dangerously-skip-permissions "${extra_args[@]}")
       ;;
     code|code-insiders|cursor)
-      "$editor" "$path"
+      "$editor" "$path" "${extra_args[@]}"
+      ;;
+    pwd)
+      echo "$path"
       ;;
     *)
       echo "Error: Unknown editor '$editor'" >&2
-      echo "Supported editors: vim, code, code-insiders, cursor, claude" >&2
+      echo "Supported editors: vim, code, code-insiders, cursor, claude, CLAUDE, pwd" >&2
       return 1
       ;;
   esac
@@ -153,6 +156,25 @@ launch_editor() {
 # Parse arguments
 editor="$DEFAULT_EDITOR"
 paths=()
+extra_args=()
+
+# Check for -- separator and split arguments
+args_before_separator=()
+args_after_separator=()
+found_separator=false
+
+for arg in "$@"; do
+  if [[ "$arg" == "--" ]]; then
+    found_separator=true
+  elif [[ "$found_separator" == true ]]; then
+    args_after_separator+=("$arg")
+  else
+    args_before_separator+=("$arg")
+  fi
+done
+
+extra_args=("${args_after_separator[@]}")
+set -- "${args_before_separator[@]}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -165,9 +187,9 @@ while [[ $# -gt 0 ]]; do
       shift 2
       ;;
     --help|-h)
-      echo "Usage: $(basename "$0") [--editor|-e EDITOR] path1 [path2 ...]"
+      echo "Usage: $(basename "$0") [--editor|-e EDITOR] path1 [path2 ...] [-- editor_args]"
       echo ""
-      echo "EDITOR options: vim, code, code-insiders, cursor, claude"
+      echo "EDITOR options: vim, code, code-insiders, cursor, claude, CLAUDE, pwd"
       echo "Default editor: $DEFAULT_EDITOR"
       echo ""
       echo "Path resolution:"
@@ -176,6 +198,14 @@ while [[ $# -gt 0 ]]; do
       echo "  ./relative/path  -> relative to current directory"
       echo "  /absolute/path   -> absolute path"
       echo "  .                -> current directory"
+      echo ""
+      echo "Additional arguments:"
+      echo "  Arguments after -- are passed directly to the editor"
+      echo "  Example: edit myrepo -e claude -- --dangerously-skip-permissions"
+      echo ""
+      echo "Special editors:"
+      echo "  CLAUDE - Same as claude but with --dangerously-skip-permissions flag"
+      echo "  pwd    - Prints resolved path (use with: cd \$(edit myrepo -e pwd))"
       exit 0
       ;;
     --*)
@@ -190,10 +220,17 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# Skip command check for 'pwd' since it's a shell builtin
+if [[ "$editor" != "pwd" ]] && ! command -v "$editor" >/dev/null 2>&1; then
+  echo "Error: editor '$editor' is not executable or not found in PATH" >&2
+  exit 1
+fi
+
+
 # Check if we have at least one path
 if [ ${#paths[@]} -eq 0 ]; then
   echo "Error: No paths provided." >&2
-  echo "Usage: $(basename "$0") [--editor|-e EDITOR] path1 [path2 ...]" >&2
+  echo "Usage: $(basename "$0") [--editor|-e EDITOR] path1 [path2 ...] [-- editor_args]" >&2
   echo "Use --help for more information" >&2
   exit 1
 fi
@@ -201,7 +238,7 @@ fi
 # Process each path
 for path_input in "${paths[@]}"; do
   if resolved_path=$(find_or_clone_repo "$path_input"); then
-    launch_editor "$editor" "$resolved_path" || exit 1
+    launch_editor "$editor" "$resolved_path" "${extra_args[@]}" || exit 1
   else
     echo "Error: Could not resolve path '$path_input'" >&2
     exit 1

@@ -10,4 +10,5 @@ npm-debug.log
 .solargraph.yml
 .solargraph_definitions.rb
 .claude/settings.local.json
+CLAUDE.local.md
 TAGS

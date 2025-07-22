@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+
+set -e
+
+# Doesn't source ~/.profile so load env vars ourselves
+source ~/icloud-drive/dotfiles/.env
+
+if [ -n "$NOTIFY_PUSHCUT_SILENT" ]; then
+    exit 0
+fi
+
+# Check if argument is provided
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 TITLE [DESCRIPTION]"
+    exit 1
+fi
+
+# Check if PUSHCUT_WEBHOOK_SECRET is set
+if [ -z "$PUSHCUT_WEBHOOK_SECRET" ]; then
+    echo "Error: PUSHCUT_WEBHOOK_SECRET environment variable is not set"
+    exit 1
+fi
+
+# Function to check if Terminal is focused
+is_terminal_focused() {
+    local frontmost_app=$(osascript -e 'tell application "System Events" to get name of first application process whose frontmost is true' 2>/dev/null)
+
+    # List of terminal applications to check
+    local terminal_apps=("Terminal" "iTerm2" "iTerm" "Alacritty" "kitty" "Warp" "Hyper" "WezTerm")
+
+    # Check if frontmost app is in the array
+    for app in "${terminal_apps[@]}"; do
+        if [[ "$frontmost_app" == "$app" ]]; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+# Function to check if display is sleeping
+is_display_sleeping() {
+    # Check if system is preventing display sleep (which means display is likely on)
+    local assertions=$(pmset -g assertions 2>/dev/null)
+
+    # If we can't get assertions, assume display is awake
+    if [ -z "$assertions" ]; then
+        return 1
+    fi
+
+    # Check if UserIsActive is 0 (user not active) and no prevent sleep assertions
+    if echo "$assertions" | grep -q "UserIsActive.*0" && \
+       ! echo "$assertions" | grep -q "PreventUserIdleDisplaySleep.*1" && \
+       ! echo "$assertions" | grep -q "Prevent sleep while display is on"; then
+        return 0  # Display is likely sleeping
+    fi
+
+    return 1  # Display is awake
+}
+
+# Set title and text
+TITLE="$1"
+TEXT="${2:-$1}"  # If text is not provided, use title as text
+
+# Only send notification if Terminal is NOT focused OR display is sleeping
+if ! is_terminal_focused || is_display_sleeping; then
+    # Send notification to Pushcut - using printf to handle quotes properly
+    curl -s -X POST "https://api.pushcut.io/$PUSHCUT_WEBHOOK_SECRET/notifications/terminal" \
+         -H 'Content-Type: application/json' \
+         -d "$(printf '{"title":"%s","text":"%s"}' "${TITLE//\"/\\\"}" "${TEXT//\"/\\\"}")"
+    exit 0
+fi
