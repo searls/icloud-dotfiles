@@ -1,0 +1,31 @@
+#!/bin/bash
+set -euo pipefail
+
+# Check if argument is provided
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 <video_path>" >&2
+    exit 1
+fi
+
+VIDEO_PATH="$1"
+
+# Check if file exists
+if [ ! -f "$VIDEO_PATH" ]; then
+    echo "Error: File '$VIDEO_PATH' not found" >&2
+    exit 1
+fi
+
+# Extract directory and basename without extension
+VIDEO_DIR=$(dirname "$VIDEO_PATH")
+VIDEO_BASENAME=$(basename "$VIDEO_PATH" | sed 's/\.[^.]*$//')
+THUMBNAIL_PATH="${VIDEO_DIR}/${VIDEO_BASENAME}.jpg"
+
+# Extract first frame as thumbnail
+/opt/homebrew/bin/ffmpeg -i "$VIDEO_PATH" -vframes 1 -f image2 "$THUMBNAIL_PATH" >/dev/null 2>&1
+
+# Upload thumbnail to S3
+aws s3 cp "$THUMBNAIL_PATH" s3://breaking-change-podcast-files/clips/ >/dev/null 2>&1
+
+# Output only the CDN URL
+THUMBNAIL_FILENAME=$(basename "$THUMBNAIL_PATH")
+echo "https://podcast-cdn.searls.co/clips/$THUMBNAIL_FILENAME"

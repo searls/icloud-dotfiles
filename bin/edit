@@ -145,9 +145,24 @@ launch_editor() {
     pwd)
       echo "$path"
       ;;
+    xcode)
+      # Look for Xcode project files in the directory
+      local xcworkspace=$(find "$path" -maxdepth 1 -name "*.xcworkspace" -type d | head -1)
+      local xcodeproj=$(find "$path" -maxdepth 1 -name "*.xcodeproj" -type d | head -1)
+      
+      # Prefer xcworkspace over xcodeproj
+      if [ -n "$xcworkspace" ]; then
+        open -a "/Applications/Xcode-beta.app" "$xcworkspace" "${extra_args[@]}"
+      elif [ -n "$xcodeproj" ]; then
+        open -a "/Applications/Xcode-beta.app" "$xcodeproj" "${extra_args[@]}"
+      else
+        # No project files found, just open the directory
+        open -a "/Applications/Xcode-beta.app" "$path" "${extra_args[@]}"
+      fi
+      ;;
     *)
       echo "Error: Unknown editor '$editor'" >&2
-      echo "Supported editors: vim, code, code-insiders, cursor, claude, CLAUDE, pwd" >&2
+      echo "Supported editors: vim, code, code-insiders, cursor, claude, CLAUDE, pwd, xcode" >&2
       return 1
       ;;
   esac
@@ -189,7 +204,7 @@ while [[ $# -gt 0 ]]; do
     --help|-h)
       echo "Usage: $(basename "$0") [--editor|-e EDITOR] path1 [path2 ...] [-- editor_args]"
       echo ""
-      echo "EDITOR options: vim, code, code-insiders, cursor, claude, CLAUDE, pwd"
+      echo "EDITOR options: vim, code, code-insiders, cursor, claude, CLAUDE, pwd, xcode"
       echo "Default editor: $DEFAULT_EDITOR"
       echo ""
       echo "Path resolution:"
@@ -206,6 +221,7 @@ while [[ $# -gt 0 ]]; do
       echo "Special editors:"
       echo "  CLAUDE - Same as claude but with --dangerously-skip-permissions flag"
       echo "  pwd    - Prints resolved path (use with: cd \$(edit myrepo -e pwd))"
+      echo "  xcode  - Opens in Xcode-beta.app (prefers .xcworkspace over .xcodeproj)"
       exit 0
       ;;
     --*)
@@ -220,8 +236,8 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Skip command check for 'pwd' since it's a shell builtin
-if [[ "$editor" != "pwd" ]] && ! command -v "$editor" >/dev/null 2>&1; then
+# Skip command check for 'pwd' since it's a shell builtin and 'xcode' since we use open -a
+if [[ "$editor" != "pwd" ]] && [[ "$editor" != "xcode" ]] && ! command -v "$editor" >/dev/null 2>&1; then
   echo "Error: editor '$editor' is not executable or not found in PATH" >&2
   exit 1
 fi

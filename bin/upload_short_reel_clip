@@ -1,0 +1,47 @@
+#!/bin/bash
+set -euo pipefail
+
+# Check if argument is provided
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 <video_path>" >&2
+    exit 1
+fi
+
+VIDEO_PATH="$1"
+
+# Check if file exists
+if [ ! -f "$VIDEO_PATH" ]; then
+    echo "Error: File '$VIDEO_PATH' not found" >&2
+    exit 1
+fi
+
+# Get the original basename (without path)
+ORIGINAL_BASENAME=$(basename "$VIDEO_PATH")
+# Create filename for Instagram-friendly version
+VIDEO_DIR=$(dirname "$VIDEO_PATH")
+FILENAME_WITHOUT_EXT="${ORIGINAL_BASENAME%.*}"
+INSTAGRAM_FRIENDLY_PATH="$VIDEO_DIR/${FILENAME_WITHOUT_EXT}_instagram_friendly.mp4"
+
+# Process video to be Instagram-friendly using ffmpeg
+/opt/homebrew/bin/ffmpeg -i "$VIDEO_PATH" \
+    -c:v libx264 \
+    -preset slow \
+    -crf 23 \
+    -r 30 \
+    -b:v 20M \
+    -maxrate 24M \
+    -bufsize 24M \
+    -vf "scale='min(1080,iw)':'min(1080,ih)':force_original_aspect_ratio=decrease" \
+    -c:a aac \
+    -b:a 125k \
+    -ar 44100 \
+    -pix_fmt yuv420p \
+    -movflags +faststart \
+    "$INSTAGRAM_FRIENDLY_PATH" \
+    -y >/dev/null 2>&1
+
+# Upload the Instagram-friendly video to S3 with original basename
+aws s3 cp "$INSTAGRAM_FRIENDLY_PATH" "s3://breaking-change-podcast-files/clips/$ORIGINAL_BASENAME" >/dev/null 2>&1
+
+# Output only the CDN URL (using original basename)
+echo "https://podcast-cdn.searls.co/clips/$ORIGINAL_BASENAME"

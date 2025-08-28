@@ -23,6 +23,11 @@ fi
 
 # Function to check if Terminal is focused
 is_terminal_focused() {
+    # If we're in tmux, always consider terminal as "not focused" for notification purposes
+    if [ -n "$TMUX" ]; then
+        return 1  # Not focused (so notifications will send)
+    fi
+    
     local frontmost_app=$(osascript -e 'tell application "System Events" to get name of first application process whose frontmost is true' 2>/dev/null)
 
     # List of terminal applications to check
