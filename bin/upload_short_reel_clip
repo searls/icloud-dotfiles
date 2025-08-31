@@ -31,7 +31,7 @@ INSTAGRAM_FRIENDLY_PATH="$VIDEO_DIR/${FILENAME_WITHOUT_EXT}_instagram_friendly.m
     -b:v 20M \
     -maxrate 24M \
     -bufsize 24M \
-    -vf "scale='min(1080,iw)':'min(1080,ih)':force_original_aspect_ratio=decrease" \
+    -vf "scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2" \
     -c:a aac \
     -b:a 125k \
     -ar 44100 \
@@ -41,7 +41,7 @@ INSTAGRAM_FRIENDLY_PATH="$VIDEO_DIR/${FILENAME_WITHOUT_EXT}_instagram_friendly.m
     -y >/dev/null 2>&1
 
 # Upload the Instagram-friendly video to S3 with original basename
-aws s3 cp "$INSTAGRAM_FRIENDLY_PATH" "s3://breaking-change-podcast-files/clips/$ORIGINAL_BASENAME" >/dev/null 2>&1
+/usr/local/bin/aws s3 cp "$INSTAGRAM_FRIENDLY_PATH" "s3://breaking-change-podcast-files/clips/$ORIGINAL_BASENAME" >/dev/null 2>&1
 
 # Output only the CDN URL (using original basename)
 echo "https://podcast-cdn.searls.co/clips/$ORIGINAL_BASENAME"
