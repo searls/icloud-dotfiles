@@ -139,6 +139,12 @@ launch_editor() {
     CLAUDE)
       (cd "$path" && claude --dangerously-skip-permissions "${extra_args[@]}")
       ;;
+    codex)
+      (cd "$path" && codex --search "${extra_args[@]}")
+      ;;
+    CODEX)
+      (cd "$path" && codex --dangerously-bypass-approvals-and-sandbox --search "${extra_args[@]}")
+      ;;
     code|code-insiders|cursor)
       "$editor" "$path" "${extra_args[@]}"
       ;;
@@ -162,7 +168,7 @@ launch_editor() {
       ;;
     *)
       echo "Error: Unknown editor '$editor'" >&2
-      echo "Supported editors: vim, code, code-insiders, cursor, claude, CLAUDE, pwd, xcode" >&2
+      echo "Supported editors: vim, code, code-insiders, cursor, claude, CLAUDE, codex, CODEX, pwd, xcode" >&2
       return 1
       ;;
   esac
@@ -204,7 +210,7 @@ while [[ $# -gt 0 ]]; do
     --help|-h)
       echo "Usage: $(basename "$0") [--editor|-e EDITOR] path1 [path2 ...] [-- editor_args]"
       echo ""
-      echo "EDITOR options: vim, code, code-insiders, cursor, claude, CLAUDE, pwd, xcode"
+      echo "EDITOR options: vim, code, code-insiders, cursor, claude, CLAUDE, codex, CODEX, pwd, xcode"
       echo "Default editor: $DEFAULT_EDITOR"
       echo ""
       echo "Path resolution:"
@@ -220,6 +226,7 @@ while [[ $# -gt 0 ]]; do
       echo ""
       echo "Special editors:"
       echo "  CLAUDE - Same as claude but with --dangerously-skip-permissions flag"
+      echo "  CODEX  - Same as codex but with --dangerously-bypass-approvals-and-sandbox"
       echo "  pwd    - Prints resolved path (use with: cd \$(edit myrepo -e pwd))"
       echo "  xcode  - Opens in Xcode-beta.app (prefers .xcworkspace over .xcodeproj)"
       exit 0
@@ -236,8 +243,10 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Skip command check for 'pwd' since it's a shell builtin and 'xcode' since we use open -a
-if [[ "$editor" != "pwd" ]] && [[ "$editor" != "xcode" ]] && ! command -v "$editor" >/dev/null 2>&1; then
+# Validate editor command presence (downcase alias to locate binary)
+editor_downcase=$(printf "%s" "$editor" | tr '[:upper:]' '[:lower:]')
+if [[ "$editor_downcase" != "pwd" ]] && [[ "$editor_downcase" != "xcode" ]] \
+   && ! command -v "$editor_downcase" >/dev/null 2>&1; then
   echo "Error: editor '$editor' is not executable or not found in PATH" >&2
   exit 1
 fi
