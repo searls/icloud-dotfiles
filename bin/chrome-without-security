@@ -1,3 +1,4 @@
 #!/bin/bash
 
-open -a Google\ Chrome --args --disable-web-security
+open -a Chromium --args --disable-web-security
+

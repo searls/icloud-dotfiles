@@ -31,7 +31,7 @@ INSTAGRAM_FRIENDLY_PATH="$VIDEO_DIR/${FILENAME_WITHOUT_EXT}_instagram_friendly.m
     -b:v 20M \
     -maxrate 24M \
     -bufsize 24M \
-    -vf "scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2" \
+    -vf "scale='min(1080,iw)':'min(1080,ih)':force_original_aspect_ratio=decrease" \
     -c:a aac \
     -b:a 125k \
     -ar 44100 \

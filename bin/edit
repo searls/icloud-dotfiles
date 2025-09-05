@@ -139,6 +139,12 @@ launch_editor() {
     CLAUDE)
       (cd "$path" && claude --dangerously-skip-permissions "${extra_args[@]}")
       ;;
+    coder)
+      (cd "$path" && npx -y @just-every/code@latest "${extra_args[@]}")
+      ;;
+    CODER)
+      (cd "$path" && npx -y @just-every/code@latest --dangerously-bypass-approvals-and-sandbox "${extra_args[@]}")
+      ;;
     codex)
       (cd "$path" && codex --search "${extra_args[@]}")
       ;;
@@ -155,7 +161,7 @@ launch_editor() {
       # Look for Xcode project files in the directory
       local xcworkspace=$(find "$path" -maxdepth 1 -name "*.xcworkspace" -type d | head -1)
       local xcodeproj=$(find "$path" -maxdepth 1 -name "*.xcodeproj" -type d | head -1)
-      
+
       # Prefer xcworkspace over xcodeproj
       if [ -n "$xcworkspace" ]; then
         open -a "/Applications/Xcode-beta.app" "$xcworkspace" "${extra_args[@]}"
@@ -168,7 +174,7 @@ launch_editor() {
       ;;
     *)
       echo "Error: Unknown editor '$editor'" >&2
-      echo "Supported editors: vim, code, code-insiders, cursor, claude, CLAUDE, codex, CODEX, pwd, xcode" >&2
+      echo "Supported editors: vim, code, code-insiders, cursor, claude, CLAUDE, coder, CODER, codex, CODEX, pwd, xcode" >&2
       return 1
       ;;
   esac
@@ -210,7 +216,7 @@ while [[ $# -gt 0 ]]; do
     --help|-h)
       echo "Usage: $(basename "$0") [--editor|-e EDITOR] path1 [path2 ...] [-- editor_args]"
       echo ""
-      echo "EDITOR options: vim, code, code-insiders, cursor, claude, CLAUDE, codex, CODEX, pwd, xcode"
+      echo "EDITOR options: vim, code, code-insiders, cursor, claude, CLAUDE, coder, CODER, codex, CODEX, pwd, xcode"
       echo "Default editor: $DEFAULT_EDITOR"
       echo ""
       echo "Path resolution:"
@@ -226,6 +232,8 @@ while [[ $# -gt 0 ]]; do
       echo ""
       echo "Special editors:"
       echo "  CLAUDE - Same as claude but with --dangerously-skip-permissions flag"
+      echo "  coder  - Runs 'npx -y @just-every/code' in the repo directory"
+      echo "  CODER  - Same as coder but adds --dangerously-bypass-approvals-and-sandbox"
       echo "  CODEX  - Same as codex but with --dangerously-bypass-approvals-and-sandbox"
       echo "  pwd    - Prints resolved path (use with: cd \$(edit myrepo -e pwd))"
       echo "  xcode  - Opens in Xcode-beta.app (prefers .xcworkspace over .xcodeproj)"
@@ -246,9 +254,19 @@ done
 # Validate editor command presence (downcase alias to locate binary)
 editor_downcase=$(printf "%s" "$editor" | tr '[:upper:]' '[:lower:]')
 if [[ "$editor_downcase" != "pwd" ]] && [[ "$editor_downcase" != "xcode" ]] \
+   && [[ "$editor_downcase" != "coder" ]] \
    && ! command -v "$editor_downcase" >/dev/null 2>&1; then
   echo "Error: editor '$editor' is not executable or not found in PATH" >&2
   exit 1
+fi
+
+# If coder/CODER was requested, ensure npx is available
+if [[ "$editor_downcase" == "coder" ]]; then
+  if ! command -v npx >/dev/null 2>&1; then
+    echo "Error: 'coder' requires Node.js/npm with 'npx' available in PATH." >&2
+    echo "Install Node.js from your package manager or nodejs.org, then retry." >&2
+    exit 1
+  fi
 fi
 
 
