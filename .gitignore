@@ -5,6 +5,7 @@
 /.env
 /config/alfred
 /project-dotfiles/**/*
+/.config/containers
 /.config/raycast
 /.config/gh
 /.config/uv
