@@ -20,6 +20,9 @@ export PATH="$HOME/bin:$PATH"
 ## /usr/local/bin - apps like aws, code, cursor use this:
 export PATH="/usr/local/bin:$PATH"
 
+## Xcode tools
+export PATH="$PATH:/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin"
+
 # As of 3/12/2024, postgresql@16 is keg-only, so add it to the path
 export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"
 

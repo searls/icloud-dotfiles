@@ -140,10 +140,10 @@ launch_editor() {
       (cd "$path" && claude --dangerously-skip-permissions "${extra_args[@]}")
       ;;
     coder)
-      (cd "$path" && npx -y @just-every/code@latest "${extra_args[@]}")
+      (cd "$path" && coder "${extra_args[@]}")
       ;;
     CODER)
-      (cd "$path" && npx -y @just-every/code@latest --dangerously-bypass-approvals-and-sandbox "${extra_args[@]}")
+      (cd "$path" && coder --dangerously-bypass-approvals-and-sandbox "${extra_args[@]}")
       ;;
     codex)
       (cd "$path" && codex --search "${extra_args[@]}")
@@ -164,12 +164,12 @@ launch_editor() {
 
       # Prefer xcworkspace over xcodeproj
       if [ -n "$xcworkspace" ]; then
-        open -a "/Applications/Xcode-beta.app" "$xcworkspace" "${extra_args[@]}"
+        open -a "/Applications/Xcode.app" "$xcworkspace" "${extra_args[@]}"
       elif [ -n "$xcodeproj" ]; then
-        open -a "/Applications/Xcode-beta.app" "$xcodeproj" "${extra_args[@]}"
+        open -a "/Applications/Xcode.app" "$xcodeproj" "${extra_args[@]}"
       else
         # No project files found, just open the directory
-        open -a "/Applications/Xcode-beta.app" "$path" "${extra_args[@]}"
+        open -a "/Applications/Xcode.app" "$path" "${extra_args[@]}"
       fi
       ;;
     *)
@@ -232,11 +232,10 @@ while [[ $# -gt 0 ]]; do
       echo ""
       echo "Special editors:"
       echo "  CLAUDE - Same as claude but with --dangerously-skip-permissions flag"
-      echo "  coder  - Runs 'npx -y @just-every/code' in the repo directory"
       echo "  CODER  - Same as coder but adds --dangerously-bypass-approvals-and-sandbox"
       echo "  CODEX  - Same as codex but with --dangerously-bypass-approvals-and-sandbox"
       echo "  pwd    - Prints resolved path (use with: cd \$(edit myrepo -e pwd))"
-      echo "  xcode  - Opens in Xcode-beta.app (prefers .xcworkspace over .xcodeproj)"
+      echo "  xcode  - Opens in Xcode.app (prefers .xcworkspace over .xcodeproj)"
       exit 0
       ;;
     --*)
@@ -259,16 +258,6 @@ if [[ "$editor_downcase" != "pwd" ]] && [[ "$editor_downcase" != "xcode" ]] \
   echo "Error: editor '$editor' is not executable or not found in PATH" >&2
   exit 1
 fi
-
-# If coder/CODER was requested, ensure npx is available
-if [[ "$editor_downcase" == "coder" ]]; then
-  if ! command -v npx >/dev/null 2>&1; then
-    echo "Error: 'coder' requires Node.js/npm with 'npx' available in PATH." >&2
-    echo "Install Node.js from your package manager or nodejs.org, then retry." >&2
-    exit 1
-  fi
-fi
-
 
 # Check if we have at least one path
 if [ ${#paths[@]} -eq 0 ]; then
