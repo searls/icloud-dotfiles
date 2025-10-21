@@ -8,6 +8,11 @@
     <array>
         <string>/Users/justin/bin/backup_all</string>
     </array>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/opt/homebrew/sbin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
     <key>StartCalendarInterval</key>
     <dict>
         <key>Hour</key>
@@ -23,4 +28,3 @@
     <string>/tmp/co.searls.justin.backup.out</string>
 </dict>
 </plist>
-

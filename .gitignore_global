@@ -1,6 +1,7 @@
 .DS_Store
 /*.xcodeproj/xcuserdata/justin.xcuserdatad
 .vscode
+.code
 npm-debug.log
 .vimrc
 .rgignore

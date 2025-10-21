@@ -2,8 +2,16 @@
 
 # Configuration (with environment variable fallbacks)
 CODE_DIR=${CODE_DIR:-"$HOME/code"}
-DEFAULT_ORG=${DEFAULT_ORG:-"searls"}
 DEFAULT_EDITOR=${DEFAULT_EDITOR:-"code"}
+
+# Support a prioritized list of default organizations (space-separated)
+DEFAULT_ORGS=${DEFAULT_ORGS:-"searls searlsco"}
+
+read -r -a DEFAULT_ORG_LIST <<<"$DEFAULT_ORGS"
+if [ ${#DEFAULT_ORG_LIST[@]} -eq 0 ] || [ -z "${DEFAULT_ORG_LIST[0]}" ]; then
+  echo "Error: DEFAULT_ORGS must include at least one organization" >&2
+  exit 1
+fi
 
 # Validate configuration
 if [ ! -d "$CODE_DIR" ]; then
@@ -89,30 +97,38 @@ find_or_clone_repo() {
       return 0
     fi
 
-    # Check in default org directory
-    if [ -d "$CODE_DIR/$DEFAULT_ORG/$input" ]; then
-      echo "$CODE_DIR/$DEFAULT_ORG/$input"
-      return 0
-    fi
+    # Check in any default org directory
+    for org in "${DEFAULT_ORG_LIST[@]}"; do
+      [ -z "$org" ] && continue
+      if [ -d "$CODE_DIR/$org/$input" ]; then
+        echo "$CODE_DIR/$org/$input"
+        return 0
+      fi
+    done
 
-    # Try to clone from default org
-    echo "Repository not found locally. Cloning $DEFAULT_ORG/$input..." >&2
-    mkdir -p "$CODE_DIR/$DEFAULT_ORG" || {
-      echo "Error: Failed to create directory '$CODE_DIR/$DEFAULT_ORG'" >&2
-      return 1
-    }
-
+    # Try to clone from default orgs in priority order
     local original_dir=$(pwd)
-    if cd "$CODE_DIR/$DEFAULT_ORG" && git clone "git@github.com:$DEFAULT_ORG/$input.git"; then
-      cd "$original_dir"
-      echo "$CODE_DIR/$DEFAULT_ORG/$input"
-      return 0
-    else
-      cd "$original_dir"
-      echo "Error: Failed to clone git@github.com:$DEFAULT_ORG/$input.git" >&2
-      echo "This could be due to network issues, authentication problems, or the repository not existing." >&2
-      return 1
-    fi
+    for org in "${DEFAULT_ORG_LIST[@]}"; do
+      [ -z "$org" ] && continue
+      echo "Repository not found locally. Cloning $org/$input..." >&2
+      if ! mkdir -p "$CODE_DIR/$org"; then
+        echo "Error: Failed to create directory '$CODE_DIR/$org'" >&2
+        cd "$original_dir"
+        return 1
+      fi
+      if cd "$CODE_DIR/$org" && git clone "git@github.com:$org/$input.git"; then
+        cd "$original_dir"
+        echo "$CODE_DIR/$org/$input"
+        return 0
+      else
+        cd "$original_dir"
+        echo "Warning: Failed to clone git@github.com:$org/$input.git" >&2
+        echo "This could be due to network issues, authentication problems, or the repository not existing." >&2
+      fi
+    done
+
+    echo "Error: Unable to clone '$input' from default orgs (tried: $DEFAULT_ORGS)" >&2
+    return 1
   fi
 }
 
@@ -220,7 +236,7 @@ while [[ $# -gt 0 ]]; do
       echo "Default editor: $DEFAULT_EDITOR"
       echo ""
       echo "Path resolution:"
-      echo "  bare_repo        -> ~/code/searls/bare_repo (clone if needed)"
+      echo "  bare_repo        -> ~/code/<org>/bare_repo (clone if needed; orgs tried: $DEFAULT_ORGS)"
       echo "  org/repo         -> ~/code/org/repo (clone if needed)"
       echo "  ./relative/path  -> relative to current directory"
       echo "  /absolute/path   -> absolute path"
@@ -229,6 +245,11 @@ while [[ $# -gt 0 ]]; do
       echo "Additional arguments:"
       echo "  Arguments after -- are passed directly to the editor"
       echo "  Example: edit myrepo -e claude -- --dangerously-skip-permissions"
+      echo ""
+      echo "Environment:"
+      echo "  DEFAULT_ORGS    Space-separated orgs checked in order before cloning"
+      echo "  CODE_DIR        Base directory for local repos (default: $CODE_DIR)"
+      echo "  DEFAULT_EDITOR  Editor launched when --editor is omitted (default: $DEFAULT_EDITOR)"
       echo ""
       echo "Special editors:"
       echo "  CLAUDE - Same as claude but with --dangerously-skip-permissions flag"

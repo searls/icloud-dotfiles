@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+# See Reel and Story specifications: https://developers.facebook.com/docs/instagram-platform/instagram-graph-api/reference/ig-user/media#query-string-parameters
+
 VALIDATIONS = {
 
   container: {

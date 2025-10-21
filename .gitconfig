@@ -9,7 +9,7 @@
   autosetupmerge = true
 [user]
   name = Justin Searls
-  email = searls@gmail.com
+  email = justin@searls.co
 [core]
   editor = vim
   autocrlf = input

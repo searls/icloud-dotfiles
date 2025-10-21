@@ -23,6 +23,9 @@ export PATH="/usr/local/bin:$PATH"
 ## Xcode tools
 export PATH="$PATH:/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin"
 
+## Need to point @just-every/code to codex explicitly with:
+export CODEX_HOME="$HOME/.codex"
+
 # As of 3/12/2024, postgresql@16 is keg-only, so add it to the path
 export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"
 
@@ -30,6 +33,15 @@ export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"
 # "Optimize Storage" option being enabled
 # macOS 14.0 public beta 3 breaks this
 # force-local-icloud-dotfiles
+
+# Define preferred terminal profiles
+read -r -d '' PROJECT_PROFILE_MAP <<EOF
+$HOME:Basic
+$HOME/code/searls/posse_party:Red Sands
+$HOME/code/searlsco/searls-auth:Man Page
+EOF
+export PROJECT_PROFILE_MAP
+PROJECT_PROFILE_DEFAULT="Basic"
 
 # Shell-specific settings
 
@@ -45,8 +57,34 @@ elif [[ "$SHELL" == *bash ]]; then
   export HISTFILESIZE=100000               # big big history
   shopt -s histappend                      # append to history, don't overwrite it
 
-  # Save and reload the history after each command finishes
-  # export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
+  project_profile_pc() { ~/bin/project_profile || true; }
+
+  # Only modify PROMPT_COMMAND (and load Apple's helper) in Apple Terminal
+  if [[ ${TERM_PROGRAM:-} == "Apple_Terminal" ]]; then
+    # Prepend safely if PROMPT_COMMAND already exists
+    if [[ -n "${PROMPT_COMMAND:-}" ]]; then
+      PROMPT_COMMAND="project_profile; ${PROMPT_COMMAND}"
+    else
+      PROMPT_COMMAND="project_profile"
+    fi
+    export PROMPT_COMMAND
+
+    # Source Apple's bash integration (defines update_terminal_cwd)
+    if [[ -f /etc/bashrc_Apple_Terminal ]]; then
+      . /etc/bashrc_Apple_Terminal
+    fi
+  else
+    # In non-Apple terminals, strip any stray update_terminal_cwd to avoid errors
+    if [[ "${PROMPT_COMMAND:-}" == *update_terminal_cwd* ]] && ! command -v update_terminal_cwd >/dev/null; then
+      _pc="${PROMPT_COMMAND}"
+      _pc="${_pc//update_terminal_cwd; /}"
+      _pc="${_pc//; update_terminal_cwd/}"
+      _pc="${_pc//update_terminal_cwd/}"
+      PROMPT_COMMAND="${_pc}"
+      unset _pc
+      export PROMPT_COMMAND
+    fi
+  fi
 
   ### Set up homebrew
   if [ -f $(brew --prefix)/etc/bash_completion ]; then
@@ -76,15 +114,7 @@ ulimit -n 10000
 ## load custom PS1 prompt
 source $HOME/bin/ps1
 
-# update_terminal_cwd() {
-#     # Identify the directory using a "file:" scheme URL,
-#     # including the host name to disambiguate local vs.
-#     # remote connections. Percent-escape spaces.
-#     local SEARCH=' '
-#     local REPLACE='%20'
-#     local PWD_URL="file://$HOSTNAME${PWD//$SEARCH/$REPLACE}"
-#     printf '\e]7;%s\a' "$PWD_URL"
-# }
+
 
 ## Enable Homebrew bash completions
 # https://docs.brew.sh/Shell-Completion

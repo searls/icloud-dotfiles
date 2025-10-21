@@ -9,7 +9,28 @@ _edit_completion() {
 
     # Get configuration from same environment variables
     local code_dir="${CODE_DIR:-$HOME/code}"
-    local default_org="${DEFAULT_ORG:-searls}"
+    local orgs_var="${DEFAULT_ORGS:-}"
+    if [[ -z "$orgs_var" && -n "${DEFAULT_ORG:-}" ]]; then
+        orgs_var="$DEFAULT_ORG"
+    fi
+    if [[ -z "$orgs_var" ]]; then
+        orgs_var="searls searlsco"
+    fi
+
+    local default_orgs=()
+    read -r -a default_orgs <<<"$orgs_var"
+
+    local cleaned_orgs=()
+    for org in "${default_orgs[@]}"; do
+        [[ -z "$org" ]] && continue
+        cleaned_orgs+=("$org")
+    done
+
+    default_orgs=("${cleaned_orgs[@]}")
+
+    if [[ ${#default_orgs[@]} -eq 0 ]]; then
+        return 0
+    fi
 
     # Handle flag completion
     case "$prev" in
@@ -56,7 +77,7 @@ _edit_completion() {
     else
         # No slash in current word - complete bare repo names
 
-                # 1. Complete against directories in current directory
+        # 1. Complete against directories in current directory
         for dir in ./${cur}*; do
             if [[ -d "$dir" ]]; then
                 dir="${dir#./}"  # Remove ./
@@ -74,15 +95,17 @@ _edit_completion() {
             done
         fi
 
-        # 3. Complete against repositories in default org
-        if [[ -d "$code_dir/$default_org" ]]; then
-            for repo in "$code_dir/$default_org"/${cur}*; do
-                if [[ -d "$repo" ]]; then
-                    repo="${repo##*/}"  # Get basename
-                    suggestions+=("$repo")
-                fi
-            done
-        fi
+        # 3. Complete against repositories in each default org
+        for default_org in "${default_orgs[@]}"; do
+            if [[ -d "$code_dir/$default_org" ]]; then
+                for repo in "$code_dir/$default_org"/${cur}*; do
+                    if [[ -d "$repo" ]]; then
+                        repo="${repo##*/}"  # Get basename
+                        suggestions+=("$repo")
+                    fi
+                done
+            fi
+        done
 
         # 4. Add org/repo completions for known orgs
         if [[ -d "$code_dir" ]]; then
@@ -112,14 +135,26 @@ _edit_completion() {
             # This is an org/repo pattern, don't add trailing slash
             :
         # Don't add trailing slash if this looks like a repository name
-        elif [[ -d "$code_dir/$suggestion" ]] || [[ -d "$code_dir/$default_org/$suggestion" ]]; then
-            # This is likely a repository, don't add trailing slash
+        elif [[ -d "$code_dir/$suggestion" ]]; then
+            # Repository at the code root
             :
-        # Only add trailing slash for local directory navigation (current dir, relative paths)
-        elif [[ -d "$suggestion" ]] || [[ -d "./$suggestion" ]]; then
-            # Don't add slash if it already ends with one
-            if [[ "$suggestion" != */ ]]; then
-                COMPREPLY[0]="$suggestion/"
+        else
+            local repo_in_default_org=false
+            for default_org in "${default_orgs[@]}"; do
+                if [[ -d "$code_dir/$default_org/$suggestion" ]]; then
+                    repo_in_default_org=true
+                    break
+                fi
+            done
+
+            if [[ "$repo_in_default_org" == true ]]; then
+                :
+            # Only add trailing slash for local directory navigation (current dir, relative paths)
+            elif [[ -d "$suggestion" ]] || [[ -d "./$suggestion" ]]; then
+                # Don't add slash if it already ends with one
+                if [[ "$suggestion" != */ ]]; then
+                    COMPREPLY[0]="$suggestion/"
+                fi
             fi
         fi
     fi

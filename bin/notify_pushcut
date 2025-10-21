@@ -9,9 +9,57 @@ if [ -n "$NOTIFY_PUSHCUT_SILENT" ]; then
     exit 0
 fi
 
+# Flag parsing (leading flags only)
+ALWAYS_SEND=""
+SILENT=""
+CODEX_PAYLOAD=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --always|-a)
+            ALWAYS_SEND=1
+            shift
+            ;;
+        --codex)
+            CODEX_PAYLOAD=1
+            shift
+            ;;
+        --silent|-s)
+            SILENT=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            # Unknown flag; treat as start of TITLE
+            break
+            ;;
+        *)
+            # First non-flag is TITLE
+            break
+            ;;
+    esac
+done
+
+# If silent, suppress all stdout/stderr from here on
+if [ -n "$SILENT" ]; then
+    exec >/dev/null 2>&1
+fi
+
+# Failure logging (parse/send). Always logs even when --silent.
+LOG_FILE="$HOME/tmp/notify_pushcut_log.txt"
+log_failure() {
+    mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || true
+    touch "$LOG_FILE" 2>/dev/null || true
+    local ts
+    ts=$(date -u +'%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || date '+%Y-%m-%dT%H:%M:%SZ')
+    printf '%s | %s\n' "$ts" "$*" >> "$LOG_FILE" 2>/dev/null || true
+}
+
 # Check if argument is provided
 if [ $# -eq 0 ]; then
-    echo "Usage: $0 TITLE [DESCRIPTION]"
+    echo "Usage: $0 [--always|-a] [--silent|-s] [--codex] TITLE [DESCRIPTION|JSON]"
     exit 1
 fi
 
@@ -27,7 +75,7 @@ is_terminal_focused() {
     if [ -n "$TMUX" ]; then
         return 1  # Not focused (so notifications will send)
     fi
-    
+
     local frontmost_app=$(osascript -e 'tell application "System Events" to get name of first application process whose frontmost is true' 2>/dev/null)
 
     # List of terminal applications to check
@@ -64,14 +112,95 @@ is_display_sleeping() {
 }
 
 # Set title and text
-TITLE="$1"
-TEXT="${2:-$1}"  # If text is not provided, use title as text
+TITLE="${1:-"Job's done"}"
+TEXT="${2:-$TITLE}"  # If text is not provided, use title as text
 
-# Only send notification if Terminal is NOT focused OR display is sleeping
-if ! is_terminal_focused || is_display_sleeping; then
-    # Send notification to Pushcut - using printf to handle quotes properly
-    curl -s -X POST "https://api.pushcut.io/$PUSHCUT_WEBHOOK_SECRET/notifications/terminal" \
-         -H 'Content-Type: application/json' \
-         -d "$(printf '{"title":"%s","text":"%s"}' "${TITLE//\"/\\\"}" "${TEXT//\"/\\\"}")"
-    exit 0
+# If --codex was provided, second arg is JSON; extract last-assistant-message
+if [ -n "$CODEX_PAYLOAD" ]; then
+    # Use jq if available to extract the field; if extraction fails, still send and log the failure
+    if command -v jq >/dev/null 2>&1; then
+        # Try to parse JSON and extract; capture jq errors without aborting (set -e is on)
+        _jq_err_file="$HOME/.notify_pushcut_jq_err"
+        extracted=$(printf '%s' "$TEXT" | jq -r '."last-assistant-message"' 2>"$_jq_err_file" || true)
+        jq_status=$?
+        if [ $jq_status -eq 0 ] && [ -n "$extracted" ] && [ "$extracted" != "null" ]; then
+            TEXT="$extracted"
+        else
+            err_msg=$(tr '\n' ' ' < "$_jq_err_file" 2>/dev/null || echo "")
+            if [ $jq_status -ne 0 ]; then
+                log_failure "codex-parse-failure: invalid JSON or jq error; title='$TITLE' error='${err_msg}'"
+            else
+                log_failure "codex-parse-missing-field: 'last-assistant-message' not found; title='$TITLE'"
+            fi
+        fi
+        rm -f "$_jq_err_file" >/dev/null 2>&1 || true
+    else
+        log_failure "codex-parse-skipped: jq not installed; title='$TITLE'"
+    fi
 fi
+
+# Only send notification if:
+# - --always flag was provided, OR
+# - Terminal is NOT focused, OR
+# - display is sleeping
+if [ -n "$ALWAYS_SEND" ] || ! is_terminal_focused || is_display_sleeping; then
+    # Build JSON payload safely (handles newlines, backslashes, quotes)
+    build_payload() {
+        if command -v jq >/dev/null 2>&1; then
+            jq -c -n --arg title "$TITLE" --arg text "$TEXT" '{title:$title,text:$text}'
+        elif command -v python3 >/dev/null 2>&1; then
+            python3 - "$TITLE" "$TEXT" <<'PY'
+import json, sys
+title, text = sys.argv[1], sys.argv[2]
+print(json.dumps({"title": title, "text": text}, ensure_ascii=False))
+PY
+        else
+            # Minimal manual escape fallback
+            esc_title=${TITLE//\\/\\\\}
+            esc_title=${esc_title//\"/\\\"}
+            esc_title=${esc_title//$'\n'/\\n}
+            esc_title=${esc_title//$'\r'/\\r}
+            esc_title=${esc_title//$'\t'/\\t}
+
+            esc_text=${TEXT//\\/\\\\}
+            esc_text=${esc_text//\"/\\\"}
+            esc_text=${esc_text//$'\n'/\\n}
+            esc_text=${esc_text//$'\r'/\\r}
+            esc_text=${esc_text//$'\t'/\\t}
+            printf '{"title":"%s","text":"%s"}' "$esc_title" "$esc_text"
+        fi
+    }
+
+    payload=$(build_payload)
+    resp_file=$(mktemp -t notify-pushcut.resp.XXXXXX)
+    err_file=$(mktemp -t notify-pushcut.err.XXXXXX)
+    http_code=$(curl -sS -o "$resp_file" -w '%{http_code}' -X POST "https://api.pushcut.io/$PUSHCUT_WEBHOOK_SECRET/notifications/terminal" \
+         -H 'Content-Type: application/json' \
+         -d "$payload" 2>"$err_file" || echo "curl_error")
+
+    if [ "$http_code" = "curl_error" ]; then
+        err_msg=$(tr '\n' ' ' <"$err_file")
+        log_failure "send-failure: curl error; title='$TITLE' error='${err_msg}'"
+        echo "notify_pushcut: failed (curl error) title='$TITLE' error='${err_msg}'"
+        rm -f "$resp_file" "$err_file" >/dev/null 2>&1 || true
+        exit 1
+    fi
+
+    case "$http_code" in
+        2**)
+            echo "notify_pushcut: sent (http $http_code) title='$TITLE'"
+            rm -f "$resp_file" "$err_file" >/dev/null 2>&1 || true
+            exit 0
+            ;;
+        *)
+            body_snip=$(head -c 500 "$resp_file" | tr '\n' ' ')
+            log_failure "send-failure: http $http_code; title='$TITLE' body='${body_snip}'"
+            echo "notify_pushcut: failed (http $http_code) title='$TITLE' body='${body_snip}'"
+            rm -f "$resp_file" "$err_file" >/dev/null 2>&1 || true
+            exit 1
+            ;;
+    esac
+fi
+
+# Not sent (terminal focused and display awake)
+echo "notify_pushcut: skipped (terminal focused & display awake) title='$TITLE'"
