@@ -3,7 +3,6 @@
 # See Reel and Story specifications: https://developers.facebook.com/docs/instagram-platform/instagram-graph-api/reference/ig-user/media#query-string-parameters
 
 VALIDATIONS = {
-
   container: {
     spec: "Container: MOV or MP4 (MPEG-4 Part 14)",
     command: ->(path) { `ffprobe -v error -show_entries format=format_name -of default=noprint_wrappers=1:nokey=1 "#{path}"`.strip.split(",") },
@@ -109,6 +108,8 @@ results = VALIDATIONS.map { |spec, details|
 
 if (error_count = results.count { |r| r == false }).zero?
   puts "\n✅ Video is valid for Instagram!"
+  exit 0
 else
   puts "\n❌ Video had #{error_count} error(s) preventing API upload to Instagram.\nDocs: #{DOCS_URL}"
+  exit 1
 end
