@@ -34,15 +34,6 @@ export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"
 # macOS 14.0 public beta 3 breaks this
 # force-local-icloud-dotfiles
 
-# Define preferred terminal profiles
-read -r -d '' PROJECT_PROFILE_MAP <<EOF
-$HOME:Basic
-$HOME/code/searls/posse_party:Red Sands
-$HOME/code/searlsco/searls-auth:Man Page
-EOF
-export PROJECT_PROFILE_MAP
-PROJECT_PROFILE_DEFAULT="Basic"
-
 # Shell-specific settings
 
 if [[ "$SHELL" == *zsh ]]; then
@@ -56,35 +47,6 @@ elif [[ "$SHELL" == *bash ]]; then
   export HISTSIZE=100000                   # big big history
   export HISTFILESIZE=100000               # big big history
   shopt -s histappend                      # append to history, don't overwrite it
-
-  project_profile_pc() { ~/bin/project_profile || true; }
-
-  # Only modify PROMPT_COMMAND (and load Apple's helper) in Apple Terminal
-  if [[ ${TERM_PROGRAM:-} == "Apple_Terminal" ]]; then
-    # Prepend safely if PROMPT_COMMAND already exists
-    if [[ -n "${PROMPT_COMMAND:-}" ]]; then
-      PROMPT_COMMAND="project_profile; ${PROMPT_COMMAND}"
-    else
-      PROMPT_COMMAND="project_profile"
-    fi
-    export PROMPT_COMMAND
-
-    # Source Apple's bash integration (defines update_terminal_cwd)
-    if [[ -f /etc/bashrc_Apple_Terminal ]]; then
-      . /etc/bashrc_Apple_Terminal
-    fi
-  else
-    # In non-Apple terminals, strip any stray update_terminal_cwd to avoid errors
-    if [[ "${PROMPT_COMMAND:-}" == *update_terminal_cwd* ]] && ! command -v update_terminal_cwd >/dev/null; then
-      _pc="${PROMPT_COMMAND}"
-      _pc="${_pc//update_terminal_cwd; /}"
-      _pc="${_pc//; update_terminal_cwd/}"
-      _pc="${_pc//update_terminal_cwd/}"
-      PROMPT_COMMAND="${_pc}"
-      unset _pc
-      export PROMPT_COMMAND
-    fi
-  fi
 
   ### Set up homebrew
   if [ -f $(brew --prefix)/etc/bash_completion ]; then
