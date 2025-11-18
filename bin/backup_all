@@ -51,5 +51,6 @@ run_backup_task() {
 run_backup_task "backup_grog"
 run_backup_task "backup_to_ssd"
 run_backup_task "backup_to_nas"
+run_backup_task "backup_github"
 
 echo_with_timestamp "----> All backups completed."

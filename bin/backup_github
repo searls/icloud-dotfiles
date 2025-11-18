@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+
+set -e
+
+BACKUP_ROOT="/Volumes/stuff/backups/code"
+OWNERS=("searls" "searlsco" "tendersearls" "standardrb" "rspec-given" "caratrb" "cabbagejs" "testdouble" "linemanjs" "legitimate-llc")
+CONCURRENCY="${BACKUP_GITHUB_CONCURRENCY:-12}"
+
+if [ -z "${GITHUB_METADATA_PAT:-}" ]; then
+  echo "GITHUB_METADATA_PAT environment variable must be set"
+  exit 1
+fi
+
+if ! command -v jq >/dev/null 2>&1; then
+  echo "jq is required but not installed"
+  exit 1
+fi
+
+echo "Backing up GitHub repositories for: ${OWNERS[*]}"
+
+repo_list_file="$(mktemp)"
+fetch_failed=false
+failed_repo_file="$(mktemp)"
+
+page=1
+while :; do
+  if ! response="$(
+    curl -fsS \
+      -H "Authorization: Bearer ${GITHUB_METADATA_PAT}" \
+      -H "Accept: application/vnd.github+json" \
+      -H "X-GitHub-Api-Version: 2022-11-28" \
+      "https://api.github.com/user/repos?per_page=100&page=${page}&affiliation=owner,organization_member"
+  )"; then
+    echo "Failed to fetch repositories from GitHub (page ${page}); stopping fetch."
+    fetch_failed=true
+    break
+  fi
+
+  if [ "$(echo "$response" | jq 'length')" -eq 0 ]; then
+    break
+  fi
+
+  echo "$response" | jq -r '
+    .[]
+    | select(.owner.login == "searls" or .owner.login == "searlsco" or .owner.login == "tendersearls")
+    | "\(.owner.login) \(.name) \(.ssh_url)"
+  ' >>"$repo_list_file"
+
+  page=$((page + 1))
+done
+
+if [ "$fetch_failed" = true ] && [ ! -s "$repo_list_file" ]; then
+  echo "Failed to fetch repository list from GitHub; no repositories backed up."
+  rm -f "$repo_list_file"
+  exit 1
+fi
+
+if [ ! -s "$repo_list_file" ]; then
+  echo "No repositories found for owners: ${OWNERS[*]}"
+  rm -f "$repo_list_file"
+  exit 0
+fi
+
+echo "Repositories to back up:"
+while read -r owner repo ssh_url; do
+  echo "${owner}/${repo}"
+done <"$repo_list_file"
+
+backup_repo() {
+  owner="$1"
+  repo="$2"
+  ssh_url="$3"
+
+  target_dir="${BACKUP_ROOT}/${owner}/${repo}"
+
+  mkdir -p "$(dirname "$target_dir")"
+
+  if [ -d "${target_dir}/.git" ]; then
+    echo "Updating ${owner}/${repo} in ${target_dir}"
+    if ! git -C "$target_dir" pull --ff-only; then
+      echo "Failed to update ${owner}/${repo}; continuing"
+      printf '%s/%s\n' "$owner" "$repo" >>"$failed_repo_file"
+    fi
+  else
+    echo "Cloning ${owner}/${repo} into ${target_dir}"
+    if ! git clone "$ssh_url" "$target_dir"; then
+      echo "Failed to clone ${owner}/${repo}; continuing"
+      printf '%s/%s\n' "$owner" "$repo" >>"$failed_repo_file"
+    fi
+  fi
+}
+
+export BACKUP_ROOT failed_repo_file
+export -f backup_repo
+
+if [ "$CONCURRENCY" -le 1 ]; then
+  while read -r owner repo ssh_url; do
+    backup_repo "$owner" "$repo" "$ssh_url"
+  done <"$repo_list_file"
+else
+  <"$repo_list_file" xargs -n 3 -P "$CONCURRENCY" bash -lc 'backup_repo "$@"' _
+fi
+
+rm -f "$repo_list_file"
+
+if [ -s "$failed_repo_file" ]; then
+  echo
+  echo "The following repositories had problems during backup:"
+  while read -r failed_repo; do
+    echo "  ${failed_repo}"
+  done <"$failed_repo_file"
+fi
+
+rm -f "$failed_repo_file"
