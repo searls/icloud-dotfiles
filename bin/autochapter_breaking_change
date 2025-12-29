@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Check if arguments were passed
+if [ "$#" -eq 0 ]; then
+    echo "Usage: $0 <mp3-file>" >&2
+    exit 1
+fi
+
+# "$@" expands to all arguments passed to this script, preserving quoting.
+autochapter \
+  -s Intro \
+  -s Follow-up \
+  -s "Aaron's Pun" \
+  -s News \
+  -s Recommendations \
+  -s Mailbag \
+  -s Outro \
+  "$@"

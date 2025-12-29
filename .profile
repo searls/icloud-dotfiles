@@ -78,22 +78,24 @@ source $HOME/bin/ps1
 
 
 
-## Enable Homebrew bash completions
+## Enable Homebrew bash completions (interactive shells only)
 # https://docs.brew.sh/Shell-Completion
-if type brew &>/dev/null
-then
-  HOMEBREW_PREFIX="$(brew --prefix)"
-  if [[ -r "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh" ]]
+if [[ $- == *i* ]]; then
+  if type brew &>/dev/null
   then
-    source "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh"
-  else
-    for COMPLETION in "${HOMEBREW_PREFIX}/etc/bash_completion.d/"*
-    do
-      [[ -r "${COMPLETION}" ]] && source "${COMPLETION}"
-    done
+    HOMEBREW_PREFIX="$(brew --prefix)"
+    if [[ -r "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh" ]]
+    then
+      source "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh"
+    else
+      for COMPLETION in "${HOMEBREW_PREFIX}/etc/bash_completion.d/"*
+      do
+        [[ -r "${COMPLETION}" ]] && source "${COMPLETION}"
+      done
+    fi
   fi
+
+  # Custom bash completion for my ~/bin/edit script
+  source "$HOME/icloud-drive/dotfiles/bash-completions/edit.bash"
 fi
 PATH="$PATH:$HOME/.local/bin"
-
-# Custom bash completion for my ~/bin/edit script
-source "$HOME/icloud-drive/dotfiles/bash-completions/edit.bash"

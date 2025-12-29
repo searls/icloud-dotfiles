@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 echo "Backing up iCloud Documents to SSD"
 rsync --archive --delete --compress --progress --partial --update --human-readable --exclude=".DS_Store" --exclude="node_modules/" /Users/justin/Documents /Volumes/stuff/backups/justin-documents
 

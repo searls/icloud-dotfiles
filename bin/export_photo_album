@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+print_usage() {
+  echo "Usage: $(basename "$0") ALBUM_NAME -o|--output-dir OUTPUT_DIR" >&2
+}
+
+if [[ $# -lt 3 ]]; then
+  print_usage
+  exit 1
+fi
+
+album_name="$1"
+shift
+
+output_dir=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -o|--output-dir)
+      output_dir="$2"
+      shift 2
+      ;;
+    -h|--help)
+      print_usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown argument: $1" >&2
+      print_usage
+      exit 1
+      ;;
+  esac
+done
+
+if [[ -z "$output_dir" ]]; then
+  echo "Error: --output-dir is required" >&2
+  print_usage
+  exit 1
+fi
+
+echo "<---- exporting album '$album_name' to '$output_dir'"
+
+mkdir -p "$output_dir"
+
+# Fast pre-check: if there are no files that look like prior exports
+# (paths matching YYYY/MM/DD/*), skip the expensive preflight query and
+# just export everything in the album.
+echo "<---- pre-pre-flight: checking for existing yyyy/mm/dd exports in '$output_dir'"
+if ! find "$output_dir" -type f \
+  -path '*/[0-9][0-9][0-9][0-9]/[0-1][0-9]/[0-3][0-9]/*' \
+  -print -quit 2>/dev/null | grep -q .; then
+  echo "<---- no matching files found; exporting entire album without preflight"
+  osxphotos export "$output_dir" \
+    --album "$album_name" \
+    --export-by-date \
+    --skip-edited \
+    --filename '{uuid}' \
+    --update \
+    >/dev/null
+  exit 0
+fi
+
+# Preflight: compute which UUIDs *would* be exported and filter out ones
+# whose target files already exist in the output directory.
+echo "<---- preflight: querying Photos for album contents"
+json_tmp="$(mktemp "${TMPDIR:-/tmp}/export_photo_album_json_XXXXXX")"
+uuid_tmp="$(mktemp "${TMPDIR:-/tmp}/export_photo_album_uuids_XXXXXX")"
+trap 'rm -f "$json_tmp" "$uuid_tmp"' EXIT
+
+osxphotos query \
+  --album "$album_name" \
+  -f relpath '{created.year}/{created.mm}/{created.dd}/{uuid}' \
+  -f uuid '{uuid}' \
+  --json \
+  --quiet \
+  --mute >"$json_tmp"
+
+echo "<---- preflight: filtering out already-exported files"
+PY_OUTPUT_DIR="$output_dir" PY_JSON_PATH="$json_tmp" python3 >"$uuid_tmp" << 'PY'
+import glob
+import json
+import os
+import sys
+
+output_dir = os.environ["PY_OUTPUT_DIR"]
+json_path = os.environ["PY_JSON_PATH"]
+
+with open(json_path, "r", encoding="utf-8") as f:
+    records = json.load(f)
+
+for rec in records:
+    relpath = rec["relpath"]
+    uuid = rec["uuid"]
+    base = os.path.join(output_dir, relpath)
+    pattern = base + ".*"  # match any extension
+    if not glob.glob(pattern):
+        print(uuid)
+PY
+
+if [[ ! -s "$uuid_tmp" ]]; then
+  echo "<---- no new photos to export; all matching files already present in '$output_dir'"
+  exit 0
+fi
+
+new_count="$(wc -l <"$uuid_tmp" | tr -d ' ')"
+echo "<---- exporting $new_count new photo(s) from album '$album_name'"
+
+osxphotos export "$output_dir" \
+  --album "$album_name" \
+  --export-by-date \
+  --skip-edited \
+  --filename '{uuid}' \
+  --update \
+  --uuid-from-file "$uuid_tmp" \
+  >/dev/null

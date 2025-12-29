@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-set -e
+set -euo pipefail
+
 
 BACKUP_ROOT="/Volumes/stuff/backups/code"
 OWNERS=("searls" "searlsco" "tendersearls" "standardrb" "rspec-given" "caratrb" "cabbagejs" "testdouble" "linemanjs" "legitimate-llc")

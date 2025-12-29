@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+REMOTE_USER="root"
+REMOTE_HOST="app.posseparty.com"
+REMOTE_ADDRESS="${REMOTE_USER}@${REMOTE_HOST}"
+REMOTE_DIRECTORY="~/posse_party"
+LOCAL_DIRECTORY="${1:-/Volumes/stuff/backups/posse_party}"
+
+echo "Running backup of POSSE Party database"
+ssh "$REMOTE_ADDRESS" "cd $REMOTE_DIRECTORY && ./bin/backup"
+
+echo "Syncing backups of POSSE Party database"
+mkdir -p "$LOCAL_DIRECTORY/database"
+rsync -av --ignore-existing "$REMOTE_ADDRESS:$REMOTE_DIRECTORY/backups/" "$LOCAL_DIRECTORY/database"

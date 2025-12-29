@@ -1,0 +1,139 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+DRY_RUN=false
+VERBOSE=false
+TARGET_DIR=""
+
+default_clutter_dir() {
+  if [ -d "$HOME/icloud-drive/clutter" ]; then
+    echo "$HOME/icloud-drive/clutter"
+  else
+    echo "$HOME/Library/Mobile Documents/com~apple~CloudDocs/clutter"
+  fi
+}
+
+usage() {
+  cat >&2 <<EOF
+Usage: $(basename "$0") [options] [DIRECTORY]
+
+Moves loose files into YYYY-MM folders based on Finder's "Date Added" (kMDItemDateAdded),
+falling back to modified time when Date Added isn't available.
+
+Options:
+  -n, --dry-run  Print actions without moving anything
+  -v, --verbose  Print each move
+  -h, --help     Show help
+
+Environment:
+  CLUTTER_DIR    Default directory when DIRECTORY isn't provided
+EOF
+}
+
+month_for_path() {
+  local path="$1"
+  local added month
+
+  added="$(mdls -name kMDItemDateAdded -raw "$path" 2>/dev/null || true)"
+  if [ -n "$added" ] && [ "$added" != "(null)" ]; then
+    month="$(date -j -f "%Y-%m-%d %H:%M:%S %z" "$added" "+%Y-%m" 2>/dev/null || true)"
+    if [ -n "$month" ]; then
+      echo "$month"
+      return
+    fi
+  fi
+
+  stat -f "%Sm" -t "%Y-%m" "$path"
+}
+
+allocate_destination_path() {
+  local source="$1"
+  local target_dir="$2"
+  local base_name stem extension index candidate
+
+  base_name="${source##*/}"
+  candidate="${target_dir}/${base_name}"
+
+  if [ ! -e "$candidate" ]; then
+    echo "$candidate"
+    return
+  fi
+
+  if [[ "$base_name" == .* && "$base_name" != *.*.* ]]; then
+    stem="$base_name"
+    extension=""
+  elif [[ "$base_name" == *.* ]]; then
+    extension=".${base_name##*.}"
+    stem="${base_name%$extension}"
+  else
+    stem="$base_name"
+    extension=""
+  fi
+
+  index=2
+  while :; do
+    candidate="${target_dir}/${stem}-${index}${extension}"
+    if [ ! -e "$candidate" ]; then
+      echo "$candidate"
+      return
+    fi
+    index=$((index + 1))
+  done
+}
+
+CLUTTER_DIR="${CLUTTER_DIR:-$(default_clutter_dir)}"
+
+while (($#)); do
+  case "$1" in
+    -n|--dry-run)
+      DRY_RUN=true
+      shift
+      ;;
+    -v|--verbose)
+      VERBOSE=true
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      if [ -n "$TARGET_DIR" ]; then
+        usage
+        exit 1
+      fi
+      TARGET_DIR="$1"
+      shift
+      ;;
+  esac
+done
+
+CLUTTER_DIR="${TARGET_DIR:-$CLUTTER_DIR}"
+
+if [ ! -d "$CLUTTER_DIR" ]; then
+  echo "Clutter directory not found: $CLUTTER_DIR" >&2
+  exit 1
+fi
+
+find "$CLUTTER_DIR" -mindepth 1 -maxdepth 1 \( -type f -o -type d \) -print0 | while IFS= read -r -d '' path; do
+  name="${path##*/}"
+  if [ -d "$path" ] && [[ "$name" =~ ^[0-9]{4}-[0-9]{2} ]]; then
+    continue
+  fi
+
+  month="$(month_for_path "$path")"
+  target_dir="${CLUTTER_DIR}/${month}"
+  destination_path="$(allocate_destination_path "$path" "$target_dir")"
+
+  if [ "$DRY_RUN" = true ]; then
+    echo "[dry-run] mkdir -p \"$target_dir\""
+    echo "[dry-run] mv \"$path\" \"$destination_path\""
+  else
+    mkdir -p "$target_dir"
+    mv "$path" "$destination_path"
+    if [ "$VERBOSE" = true ]; then
+      echo "moved \"$path\" -> \"$destination_path\""
+    fi
+  fi
+done

@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-set -e
+set -euo pipefail
 
 # Define your S3 bucket name and local directory path
 CLI_PROFILE="grog"

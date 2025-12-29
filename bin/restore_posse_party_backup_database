@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+backup_dir="${BACKUP_DIR:-/Volumes/stuff/backups/posse_party/database}"
+backup_path="${1:-}"
+
+if [[ -z "$backup_path" ]]; then
+  backup_path="$(ls -1t "${backup_dir}"/*.sql.gz 2>/dev/null | head -n 1)"
+fi
+
+if [[ -z "$backup_path" ]]; then
+  echo "No backup .sql.gz files found in ${backup_dir}" >&2
+  exit 1
+fi
+
+if [[ ! -f "$backup_path" ]]; then
+  echo "Backup file not found: ${backup_path}" >&2
+  exit 1
+fi
+
+db_name="$(basename "$backup_path")"
+db_name="${db_name%.sql.gz}"
+
+echo "Restoring ${backup_path} into database ${db_name}..."
+
+dropdb --if-exists "${db_name}"
+createdb "${db_name}"
+echo "Created database ${db_name}"
+gunzip -c "${backup_path}" \
+  | sed \
+      -e '/^\\unrestrict/d' \
+      -e '/^\\restrict/d' \
+      -e '/^SET transaction_timeout/d' \
+      -e 's/OWNER TO \"postgres\";/OWNER TO CURRENT_USER;/g' \
+      -e 's/OWNER TO postgres;/OWNER TO CURRENT_USER;/g' \
+      -e 's/ TO \"postgres\";/ TO CURRENT_USER;/g' \
+      -e 's/ TO postgres;/ TO CURRENT_USER;/g' \
+  | psql --set=ON_ERROR_STOP=1 "${db_name}"
+
+echo "Restore complete."
+echo "${db_name}"

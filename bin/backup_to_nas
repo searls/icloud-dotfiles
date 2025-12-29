@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -euo pipefail
 
 nas_ip_address="192.168.1.65"
 nas_ssh_port="2471"

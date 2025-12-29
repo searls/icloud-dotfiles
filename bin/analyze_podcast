@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+file_path=${1:?"pass an MP3 file path"}
+
+# Ensure ffprobe is actually installed
+if ! command -v ffprobe &> /dev/null; then
+    echo "Error: ffprobe could not be found." >&2
+    exit 1
+fi
+
+# Get duration
+raw_duration=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$file_path")
+
+# Check if ffprobe returned a valid number
+if [[ -z "$raw_duration" || "$raw_duration" == "N/A" ]]; then
+    echo "Error: Could not read duration from file." >&2
+    exit 1
+fi
+
+# Strip decimal points for integer math (e.g., 123.456 -> 123)
+duration_seconds=${raw_duration%.*}
+
+hours=$((duration_seconds / 3600))
+minutes=$(((duration_seconds % 3600) / 60))
+seconds=$((duration_seconds % 60))
+duration=$(printf "%02d:%02d:%02d" "$hours" "$minutes" "$seconds")
+
+# Get file size
+# Note: 'stat -f%z' is specific to macOS/BSD.
+# If you move this to Linux, change this line to: byte_length=$(stat -c%s "$file_path")
+byte_length=$(stat -f%z "$file_path")
+
+# GUID Fix: Generates random bytes, strips symbols, and takes the first 24 characters
+guid=$(openssl rand -base64 48 | tr -dc 'a-zA-Z0-9' | head -c 24)
+
+printf "duration: %s\n" "$duration"
+printf "byteLength: %s\n" "$byte_length"
+printf "guid: %s\n" "$guid"

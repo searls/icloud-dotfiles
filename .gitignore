@@ -13,6 +13,7 @@
 /.config/configstore
 /.config/karabiner/automatic_backups
 /.config/simple-update-notifier
+/.config/osxphotos
 /bin/yt-dlp
 /config/mackup
 /.netrc

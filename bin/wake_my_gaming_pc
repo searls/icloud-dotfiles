@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+command -v wakeonlan >/dev/null 2>&1 || { echo "wakeonlan not found. Install with: brew install wakeonlan" >&2; exit 1; }
+[ -n "${GAMING_PC_MAC_ADDRESSES:-}" ] || { echo "Set GAMING_PC_MAC_ADDRESSES to comma-separated MAC addresses." >&2; exit 1; }
+
+IFS=',' read -ra macs <<< "$GAMING_PC_MAC_ADDRESSES"
+
+for mac in "${macs[@]}"; do
+  trimmed="${mac//[[:space:]]/}"
+  [ -z "$trimmed" ] && continue
+  echo "Waking $trimmed"
+  wakeonlan "$trimmed"
+done

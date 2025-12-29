@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+brew update
+brew bundle upgrade --global --verbose
+brew bundle check --global --verbose
+

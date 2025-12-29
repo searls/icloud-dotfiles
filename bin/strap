@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+cd "$HOME"
+
+[ -L icloud-drive ] || ln -s "$HOME/Library/Mobile Documents/com~apple~CloudDocs" icloud-drive
+[ -L lolbrary ] || ln -s "$HOME/Library" lolbrary
+
+for link in .Brewfile .config .gemrc .gitconfig .gitignore_global .inputrc .profile .bashrc .vim .vimrc bin .fzf.bash .tmux.conf .netrc .irbrc .codex; do
+  if [ -L "$HOME/$link" ]; then
+    echo "Link '$link' already exists"
+  else
+    ln -s "icloud-drive/dotfiles/$link" .
+  fi
+done
+
+touch "$HOME/.hushlogin"
+touch "$HOME/.bash_sessions_disable"
+
+mkdir -p "$HOME/.ssh"
+cd "$HOME/.ssh"
+[ -L config ] || ln -s ../icloud-drive/dotfiles/.ssh/config .
+cd "$HOME"
+
+defaults write com.apple.screencapture disable-shadow -bool true
+sudo defaults write com.apple.Safari WebKitMediaPlaybackAllowsInline -bool false
+sudo defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2AllowsInlineMediaPlayback -bool false
+defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false
+defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false
+defaults write -g ApplePressAndHoldEnabled -bool false
+
+if command -v brew >/dev/null 2>&1; then
+  echo "Homebrew installed"
+else
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
+
+eval "$(/opt/homebrew/bin/brew shellenv)"
+brew update
+brew bundle --global --no-upgrade
+
+if ! grep -q "^/opt/homebrew/bin/bash$" /etc/shells; then
+  echo /opt/homebrew/bin/bash | sudo tee -a /etc/shells >/dev/null
+fi
+
+if [ "$SHELL" != "/opt/homebrew/bin/bash" ]; then
+  chsh -s /opt/homebrew/bin/bash
+fi
+
+export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"
+if psql -lqt | cut -d \| -f 1 | grep -qw "$(whoami)"; then
+  echo "Default postgres database already exists"
+else
+  createdb "$(whoami)"
+fi
+
+NODE_VERSION="20.17.0"
+eval "$(nodenv init -)"
+if [ -d "$HOME/.nodenv/versions/$NODE_VERSION" ]; then
+  echo "Node $NODE_VERSION already installed"
+else
+  nodenv install "$NODE_VERSION"
+fi
+nodenv global "$NODE_VERSION"
+
+RUBY_VERSION="3.3.4"
+eval "$(rbenv init -)"
+if [ -d "$HOME/.rbenv/versions/$RUBY_VERSION" ]; then
+  echo "Ruby $RUBY_VERSION already installed"
+else
+  rbenv install "$RUBY_VERSION"
+fi
+rbenv global "$RUBY_VERSION"
+gem update --system
+gem install bundler htmlbeautifier ripper-tags
+
+cp "$HOME/icloud-drive/dotfiles/launch-agents/"* "$HOME/Library/LaunchAgents"
+
+source "$HOME/.profile"
