@@ -10,6 +10,7 @@ brew "bash"
 brew "bash-completion@2"
 
 # Core CLI utilities (used constantly; also show up in other scripts/config)
+brew "coreutils"
 # - fzf: interactive fuzzy finder (hooked up in `.profile`)
 brew "fzf"
 # - ripgrep: fast text search (also wired into fzf CTRL-T via `.profile`)
