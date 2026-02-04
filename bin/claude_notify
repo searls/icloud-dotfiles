@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# Smart Claude Code notification script
+# Reads hook JSON from stdin, extracts useful info, sends to pushcut
+
+set -euo pipefail
+
+# Read JSON from stdin
+json=$(cat)
+
+hook_event=$(echo "$json" | jq -r '.hook_event_name // "Unknown"')
+transcript_path=$(echo "$json" | jq -r '.transcript_path // ""')
+cwd=$(echo "$json" | jq -r '.cwd // ""')
+project=$(basename "$cwd" 2>/dev/null || echo "claude")
+
+case "$hook_event" in
+  "Stop")
+    # Extract last assistant message from transcript for summary
+    if [[ -n "$transcript_path" && -f "$transcript_path" ]]; then
+      # Get last assistant message, extract text content, truncate to 255 chars
+      last_message=$(tail -20 "$transcript_path" 2>/dev/null | \
+        grep '"type":"assistant"' | \
+        tail -1 | \
+        jq -r '.message.content[]? | select(.type=="text") | .text' 2>/dev/null | \
+        head -c 255 || echo "")
+
+      if [[ -n "$last_message" ]]; then
+        # Extract first line as headline (up to 50 chars)
+        # Use sed instead of xargs to avoid quote escaping issues
+        headline=$(echo "$last_message" | head -1 | head -c 50 | sed 's/[#*`"'"'"']//g; s/^[[:space:]]*//; s/[[:space:]]*$//')
+        [[ -z "$headline" ]] && headline="Task completed"
+
+        # Use full message as body (255 chars)
+        body=$(echo "$last_message" | tr '\n' ' ' | head -c 255 | sed 's/["'"'"']//g; s/^[[:space:]]*//; s/[[:space:]]*$//')
+        [[ -z "$body" ]] && body="Claude has finished working"
+      else
+        headline="Task completed"
+        body="Claude has finished working"
+      fi
+    else
+      headline="Task completed"
+      body="Claude has finished working"
+    fi
+
+    "$HOME/bin/notify_pushcut" --always "$project: $headline" "$body"
+    ;;
+
+  "Notification")
+    # Use the message field from notification
+    message=$(echo "$json" | jq -r '.message // "Waiting for input"')
+    notification_type=$(echo "$json" | jq -r '.notification_type // "unknown"')
+
+    case "$notification_type" in
+      "elicitation_dialog")
+        "$HOME/bin/notify_pushcut" --always "$project: Question" "$message"
+        ;;
+      "permission_prompt")
+        "$HOME/bin/notify_pushcut" --always "$project: Permission" "$message"
+        ;;
+      "idle_prompt")
+        # Skip - the Stop hook already handles this case
+        ;;
+      *)
+        "$HOME/bin/notify_pushcut" --always "$project: Notification" "$message"
+        ;;
+    esac
+    ;;
+
+  *)
+    "$HOME/bin/notify_pushcut" --always "$project: $hook_event" "Hook triggered"
+    ;;
+esac

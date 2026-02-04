@@ -14,9 +14,12 @@
 /.config/karabiner/automatic_backups
 /.config/simple-update-notifier
 /.config/osxphotos
+/.config/mole
 /bin/yt-dlp
+/bin/rcp
 /config/mackup
 /.netrc
 /models
 /docsets
 /.codex
+/.claude.json

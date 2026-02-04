@@ -58,6 +58,9 @@ brew "postgresql@16", restart_service: :changed
 # - hugo: static site generator
 brew "hugo"
 
+# Agent/MCP Stuff
+brew "cameroncooke/axe/axe"
+
 # Multimedia / AV (used by scripts in `bin/`)
 # - ffmpeg: used by `bin/mkv2mp4`, `bin/trimify`, `bin/webpify`, `bin/speed-up-video`, etc.
 brew "ffmpeg"
@@ -71,6 +74,9 @@ brew "heroku/brew/heroku"
 brew "rhettbull/osxphotos/osxphotos"
 # - autochapter: used by `bin/autochapter_breaking_change`
 brew "searlsco/tap/autochapter"
+
+# Terminal
+cask "ghostty"
 
 # Browser
 cask "ungoogled-chromium"

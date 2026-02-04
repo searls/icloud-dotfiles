@@ -4,12 +4,27 @@ set -euo pipefail
 
 cd "$HOME"
 
-[ -L icloud-drive ] || ln -s "$HOME/Library/Mobile Documents/com~apple~CloudDocs" icloud-drive
-[ -L lolbrary ] || ln -s "$HOME/Library" lolbrary
+if [ -L icloud-drive ]; then
+  echo "Link 'icloud-drive' already exists"
+elif [ -e icloud-drive ]; then
+  echo "WARNING: 'icloud-drive' exists but is not a symlink"
+else
+  ln -s "$HOME/Library/Mobile Documents/com~apple~CloudDocs" icloud-drive
+fi
 
-for link in .Brewfile .config .gemrc .gitconfig .gitignore_global .inputrc .profile .bashrc .vim .vimrc bin .fzf.bash .tmux.conf .netrc .irbrc .codex; do
+if [ -L lolbrary ]; then
+  echo "Link 'lolbrary' already exists"
+elif [ -e lolbrary ]; then
+  echo "WARNING: 'lolbrary' exists but is not a symlink"
+else
+  ln -s "$HOME/Library" lolbrary
+fi
+
+for link in .Brewfile .config .gemrc .gitconfig .gitignore_global .inputrc .profile .bashrc .vim .vimrc bin .fzf.bash .tmux.conf .netrc .irbrc .codex .claude.json; do
   if [ -L "$HOME/$link" ]; then
     echo "Link '$link' already exists"
+  elif [ -e "$HOME/$link" ]; then
+    echo "WARNING: '$link' exists but is not a symlink"
   else
     ln -s "icloud-drive/dotfiles/$link" .
   fi
@@ -20,7 +35,35 @@ touch "$HOME/.bash_sessions_disable"
 
 mkdir -p "$HOME/.ssh"
 cd "$HOME/.ssh"
-[ -L config ] || ln -s ../icloud-drive/dotfiles/.ssh/config .
+if [ -L config ]; then
+  echo "Link '.ssh/config' already exists"
+elif [ -e config ]; then
+  echo "WARNING: '.ssh/config' exists but is not a symlink"
+else
+  ln -s ../icloud-drive/dotfiles/.ssh/config .
+fi
+cd "$HOME"
+
+mkdir -p "$HOME/.claude"
+cd "$HOME/.claude"
+for item in CLAUDE.md settings.json hooks; do
+  if [ -L "$item" ]; then
+    echo "Link '.claude/$item' already exists"
+  elif [ -e "$item" ]; then
+    echo "WARNING: '.claude/$item' exists but is not a symlink"
+  else
+    ln -s ../icloud-drive/dotfiles/.claude/"$item" .
+  fi
+done
+mkdir -p "$HOME/.claude/prove_it"
+cd "$HOME/.claude/prove_it"
+if [ -L config.json ]; then
+  echo "Link '.claude/prove_it/config.json' already exists"
+elif [ -e config.json ]; then
+  echo "WARNING: '.claude/prove_it/config.json' exists but is not a symlink"
+else
+  ln -s ../../icloud-drive/dotfiles/.claude/prove_it/config.json .
+fi
 cd "$HOME"
 
 defaults write com.apple.screencapture disable-shadow -bool true
@@ -55,20 +98,22 @@ else
   createdb "$(whoami)"
 fi
 
-NODE_VERSION="20.17.0"
 eval "$(nodenv init -)"
+NODE_VERSION=$(nodenv install -l | grep -E '^[0-9]+\.' | awk -F. '$1 % 2 == 0' | tail -1)
 if [ -d "$HOME/.nodenv/versions/$NODE_VERSION" ]; then
   echo "Node $NODE_VERSION already installed"
 else
+  echo "Installing Node $NODE_VERSION..."
   nodenv install "$NODE_VERSION"
 fi
 nodenv global "$NODE_VERSION"
 
-RUBY_VERSION="3.3.4"
 eval "$(rbenv init -)"
+RUBY_VERSION=$(rbenv install -l | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | tail -1)
 if [ -d "$HOME/.rbenv/versions/$RUBY_VERSION" ]; then
   echo "Ruby $RUBY_VERSION already installed"
 else
+  echo "Installing Ruby $RUBY_VERSION..."
   rbenv install "$RUBY_VERSION"
 fi
 rbenv global "$RUBY_VERSION"
