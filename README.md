@@ -18,7 +18,7 @@ Here's my [full routine for setting up a new Mac on YouTube](https://blog.testdo
 Fork this repo and clone it into your iCloud Drive as "dotfiles" like so:
 
 ```
-$ git clone --recursive https://github.com/searls/icloud-dotfiles.git "~/Library/Mobile Documents/com~apple~CloudDocs/dotfiles"
+git clone --recursive https://github.com/searls/icloud-dotfiles.git "~/Library/Mobile Documents/com~apple~CloudDocs/dotfiles"
 ```
 
 ### 2. Run the setup script
@@ -27,7 +27,7 @@ Now, run the initial setup script (which you can review
 [here](https://github.com/searls/icloud-dotfiles/blob/master/bin/strap)):
 
 ```
-$ ~/Library/Mobile\ Documents/com~apple~CloudDocs/dotfiles/bin/strap
+~/Library/Mobile\ Documents/com~apple~CloudDocs/dotfiles/bin/strap
 ```
 
 In my case, this:
